@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ICU_App.View.DebugPage"
+             xmlns:viewmodel="clr-namespace:ICU_App.ViewModel"
+             x:DataType="viewmodel:DebugViewModel"
+             Title="Debug">
+    <StackLayout>
+        <Label Text="Test"></Label>
+        <Label Text="{Binding OrientationDebug}"/>
+        <Label Text="{Binding OrientationEulerDebug}"/>
+        <Label Text="{Binding OrientationDirDebug}" />
+        <Button Text="Start/Stop" Command="{Binding Start_Stop_Debug_CommandCommand}"/>
+        <Button Text="Set Position" Command="{Binding Set_Position_CommandCommand}"/>
+    </StackLayout>
+</ContentPage>
