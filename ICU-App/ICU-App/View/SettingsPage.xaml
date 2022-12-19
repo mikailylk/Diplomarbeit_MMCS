@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ICU_App.View.SettingsPage"
+             Title="Settings"
+             xmlns:viewmodel="clr-namespace:ICU_App.ViewModel"
+             x:DataType="viewmodel:SettingsViewModel">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="5*"/>
+        </Grid.ColumnDefinitions>
+        <Label Text="Protocol" Margin="20,10,0,0"/>
+        <VerticalStackLayout HorizontalOptions="Center" Grid.Row="1">
+            <RadioButton 
+            Content="Drone"
+            IsChecked="True"
+            Grid.Column="0" Grid.Row="0"
+            VerticalOptions="Start"
+            x:Name="rdDrone"/>
+            <RadioButton 
+            Content="Car"
+            IsChecked="False"
+            Grid.Column="0" Grid.Row="1"
+            VerticalOptions="Start"
+            x:Name="rdCar"/>
+        </VerticalStackLayout>
+
+
+        <VerticalStackLayout Grid.Column="1">
+            <HorizontalStackLayout>
+                <Label Text="Server" VerticalOptions="Center"/>
+                <Picker ItemsSource="{Binding Hostnames}" SelectedIndex="0"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <Button Text="Ok"
+                Command="{Binding NavigateCommand}"
+                Grid.Column="0"
+                Grid.Row="2"/>
+        
+        <Button Text="{Binding Testid2}"
+                Command="{Binding Increment_Test_idCommand}"
+                Grid.Column="1"
+                Grid.Row="2"/>
+    </Grid>
+</ContentPage>

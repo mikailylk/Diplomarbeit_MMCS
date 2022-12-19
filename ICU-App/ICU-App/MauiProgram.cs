@@ -16,20 +16,21 @@ public static class MauiProgram
 			});
 
 		// View Registrationen als Service
-		builder.Services.AddSingleton<MainPage>();
+		builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<DebugPage>();
+		builder.Services.AddSingleton<SettingsPage>();
 
         // TODO: Zwischen Windows und Android Platform unterscheiden -> Sensoren nicht einlesen (Orientation) für Windows
 		// ViewModel Registrationen als Service
-        builder.Services.AddSingleton<MainViewModel>();
+        builder.Services.AddTransient<MainViewModel>();
 		builder.Services.AddTransient<DebugViewModel>();
+		builder.Services.AddSingleton<SettingsViewModel>();
 
 
-		// Sensor Registrationen als Service
-		if (!DeviceInfo.Current.Platform.Equals(DevicePlatform.WinUI))
-		{
-			builder.Services.AddSingleton<IOrientationSensor>(OrientationSensor.Default);
-		}
+		// Sensor Registrationen als Service (hier: nur für ANDROID Geräte nutzen)
+		#if ANDROID
+		builder.Services.AddSingleton<IOrientationSensor>(OrientationSensor.Default);
+		#endif
 		return builder.Build();
 	}
 }

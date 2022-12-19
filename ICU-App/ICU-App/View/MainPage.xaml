@@ -3,14 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ICU_App.View.MainPage"
              xmlns:viewmodel="clr-namespace:ICU_App.ViewModel"
-             x:DataType="viewmodel:MainViewModel">
-
+             x:DataType="viewmodel:MainViewModel"
+             Shell.NavBarIsVisible="False">
     <StackLayout
-            Spacing="25"
-            Padding="30,0"
+            Margin="10,10,0,0"
             VerticalOptions="Center">
-
-
-        <WebView x:Name="wbviewCam" Source="http://info.cern.ch/" VerticalOptions="FillAndExpand"/>
+        <Label Text="{Binding Settingsmodel.testid}"/>
+        <!--<WebView Margin="-10,0,0,0" x:Name="wbviewCam" Source="http://192.168.188.71:8082/index.html" VerticalOptions="FillAndExpand"/>-->
+        <WebView Margin="-10,0,0,0" x:Name="wbviewCam" Source="http://192.168.137.45:8082/index.html" VerticalOptions="FillAndExpand"/>
     </StackLayout>
 </ContentPage>

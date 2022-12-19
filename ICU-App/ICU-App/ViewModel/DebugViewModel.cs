@@ -12,6 +12,7 @@ public partial class DebugViewModel : ObservableObject
     SensorSpeed speed;
     AngleCalc calc;
     Vector3 euler;
+
     double standard_x;
     double standard_y;
     double standard_z;
@@ -25,70 +26,99 @@ public partial class DebugViewModel : ObservableObject
 
     public DebugViewModel(IOrientationSensor orientationSensor)
     {
-        this.orientationSensor = orientationSensor;
-
         // Konstruktor für Android device
+        if (orientationSensor != null)
+        {
+            this.orientationSensor = orientationSensor;
+        }
 
-        speed = SensorSpeed.Fastest;
-        OrientationSensor.ReadingChanged += OrientationSensor_ReadingChanged;
-        calc = new AngleCalc();
-        euler = new Vector3();
+        // Überprüfen ob Orientation Sensor unterstützt wird
+        if (this.orientationSensor.IsSupported)
+        {
+            speed = SensorSpeed.Fastest;
+            OrientationSensor.ReadingChanged += OrientationSensor_ReadingChanged;
+            calc = new AngleCalc();
+            euler = new Vector3();
+        }
     }
 
     public DebugViewModel()
     {
-        // Konstruktor für PC
+        // Konstruktor für PC (Windows besitzt kein Orientation Sensor)
     }
 
-    [RelayCommand]
-    void Start_Stop_Debug_Command()
+    [RelayCommand(CanExecute = nameof(CanStart_Stop_Debug))]
+    private void Start_Stop_Debug()
     {
-        if (orientationSensor != null && orientationSensor.IsMonitoring)
+        if (this.orientationSensor.IsSupported)
         {
-            orientationSensor.Stop();
+            if (orientationSensor.IsMonitoring)
+            {
+                orientationSensor.Stop();
+            }
+            else if (!orientationSensor.IsMonitoring)
+            {
+                orientationSensor.Start(speed);
+            }
         }
-        else if (orientationSensor != null && !orientationSensor.IsMonitoring)
-        {
-            orientationSensor.Start(speed);
-        }
+        
     }
 
-    [RelayCommand]
-    void Set_Position_Command()
+    private bool CanStart_Stop_Debug()
+    {
+        if (this.orientationSensor != null)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanSet_Position))]
+    private void Set_Position()
     {
         standard_x = (euler.X * 180 / Math.PI);
         standard_y = (euler.Y * 180 / Math.PI);
         standard_z = (euler.Z * 180 / Math.PI);
     }
 
+    private bool CanSet_Position()
+    {
+        if (this.orientationSensor != null)
+        {
+            return true;
+        }
+        return false;
+    }
+
     private void OrientationSensor_ReadingChanged(object sender, OrientationSensorChangedEventArgs e)
     {
         var data = e.Reading;
+
+
         // TODO: Binding
         OrientationDebug = "Orient: \n\r" +
-            $"X: {Math.Round(data.Orientation.X, 4)}, Y: {Math.Round(data.Orientation.Y, 4)}, Z: {Math.Round(data.Orientation.Z, 4)}, W: {Math.Round(data.Orientation.W, 4)}";
+            $"X: {Math.Round(data.Orientation.X, 3)}, Y: {Math.Round(data.Orientation.Y, 3)}, Z: {Math.Round(data.Orientation.Z, 3)}, W: {Math.Round(data.Orientation.W, 3)}";
 
-        euler = calc.ToEulerAngles(data.Orientation);
+        Quaternion q = new Quaternion((float)Math.Round(data.Orientation.X, 3), (float)Math.Round(data.Orientation.Y, 3), (float)Math.Round(data.Orientation.Z, 3), (float)Math.Round(data.Orientation.W, 3));
+        euler = calc.ToEulerAngles(q);
         // OrientationEulerDebug = $"Euler\n\rX: {(int)(euler.X * 180 / Math.PI)} \n\rY: {(int)(euler.Y * 180 / Math.PI)} \n\rZ: {(int)(euler.Z * 180 / Math.PI)}";
 
+        //double yaw = euler.Z * 180 / Math.PI;       // ("horizontale Neigung des Smartphones")
+        //double pitch = euler.Y * 180 / Math.PI;     // ("Schrägheit des Smartphones")   
+        //double roll = euler.X * 180 / Math.PI;      // ("vertikale Neigung des Smartphones" -> abhängig von Ausrichtung des Smartphones)
 
-        // Ausrichtung (Horizontal)
-        double yaw = euler.Z * 180 / Math.PI;      // ("horizontale Neigung des Smartphones")
-        if (yaw < 0)
-        {
-            yaw = yaw + 360;
-        }
-        double pitch = euler.X * 180 / Math.PI;     // ("Schrägheit des Smartphones")   
-        double roll = euler.Y * 180 / Math.PI;       // ("vertikale Neigung des Smartphones" -> abhängig von Ausrichtung des Smartphones)
-        OrientationEulerDebug = $"Dir\n\r{nameof(pitch)} {(int)(pitch)} \n\r{nameof(roll)} {(int)(roll)} \n\r{nameof(yaw)} {(int)(yaw)}";
-        // OrientationDirDebug = $"Pos\n\rX: {((standard_x - euler.X) * 180 / Math.PI)} \n\rY: {(standard_y - euler.Y * 180 / Math.PI)} \n\rZ: {(standard_z - euler.Z * 180 / Math.PI)}";
+        double yaw = euler.Z;
+        double pitch = euler.Y;
+        double roll = euler.X;
 
+
+        OrientationEulerDebug = $"Dir\n\r{nameof(pitch)} {(int)(pitch)} \n\r{nameof(roll)} {(int)(roll)} \n\r{nameof(yaw)} {(int)(yaw)}\n\r";
         // Richtung (Vertikal, Horizontal Links, Horizontal Rechts)
         // Y ... -90 Links (Handy aufkippen)
         // Y ... +90 Rechts (Handy aufkippen)
         // Z ... Kopf links rechts drehen
 
-
+        
     }
 }
 
