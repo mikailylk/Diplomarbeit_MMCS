@@ -47,6 +47,8 @@ public partial class MainViewModel : ObservableRecipient
     private UDPClient _udpclient;
     private CancellationTokenSource _cancelClientTokenSource;
 
+    [ObservableProperty]
+    private string telemetry;
 
     private IOrientationSensor _orientationSensor;
     private SensorSpeed speed = SensorSpeed.UI;
@@ -117,6 +119,7 @@ public partial class MainViewModel : ObservableRecipient
         Cancel_Server();
         Cancel_Client();
 
+        _orientationSensor.Stop();
         OrientationSensor.ReadingChanged -= OrientationSensor_ReadingChanged;
     }
 
@@ -287,6 +290,11 @@ public partial class MainViewModel : ObservableRecipient
                 // auf Reply von Raspberry Pi Zero warten
                 var received = await _udpclient.Receive();
                 string message = received.Message;
+                TelemetryData telemetryData = JsonSerializer.Deserialize<TelemetryData>(message);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Telemetry = telemetryData.ToString();
+                });
                 // TODO: Telemetrydaten in eine Liste geben und am Ende in einem File abspeichern
             }
         }
@@ -374,6 +382,9 @@ public partial class MainViewModel : ObservableRecipient
 
             if (location != null)
             {
+                _longtitude_phone = location.Longitude;
+                _latitude_phone = location.Latitude;
+
                 ZoomToPoint(location.Longitude, location.Latitude, MapView);
             }
         }
