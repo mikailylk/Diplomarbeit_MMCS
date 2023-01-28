@@ -80,7 +80,6 @@ public partial class DebugViewModel : ObservableObject
                 orientationSensor.Start(speed);
             }
         }
-
     }
 
     private bool CanStart_Stop_Debug()
@@ -153,7 +152,7 @@ public partial class DebugViewModel : ObservableObject
         x = angles.X;
         y = angles.Y;
         z = angles.Z;
-        OrientationEulerDebug = $"Dir\n\rPitch: {(double)(y)} \n\rRoll {(double)(x)} \n\rYaw {(double)z}\n\r";
+        OrientationEulerDebug = $"Dir\n\rPitch: {(double)(z)} \n\rRoll {(double)(y)} \n\rYaw {(double) x}\n\r";
     }
     //private void OrientationSensor_ReadingChanged(object sender, OrientationSensorChangedEventArgs e)
     //{

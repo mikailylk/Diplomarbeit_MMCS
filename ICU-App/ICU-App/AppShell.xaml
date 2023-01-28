@@ -6,10 +6,10 @@
     xmlns:local="clr-namespace:ICU_App"
     xmlns:view="clr-namespace:ICU_App.View"
     Shell.FlyoutBehavior="Disabled">
-    
+
+    <!--<ShellContent
+        ContentTemplate="{DataTemplate view:MainPage}"/>-->
     <ShellContent
-        Title="Settings"
-        ContentTemplate="{DataTemplate view:SettingsPage}"
-        Route="SettingsPage"/>
+        ContentTemplate="{DataTemplate view:SettingsPage}"/>
 
 </Shell>

@@ -8,11 +8,11 @@ namespace ICU_App.Model;
 
 public class SettingsModel
 {
-    public SettingsModel(int testid)
+    public SettingsModel(string raspi_ip)
     {
-        this.testid = testid;
+        this.raspi_ip = raspi_ip;
     }
 
     // TODO: Settings 
-    public int testid { get; set; }
+    public string raspi_ip { get; set; }
 }
