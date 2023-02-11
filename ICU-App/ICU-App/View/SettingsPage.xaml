@@ -35,14 +35,14 @@
                                 <Label Text="Protocol: " Grid.Column="0" Grid.Row="0" Margin="5,0,0,0"/>
                                 <RadioButton 
                                     Content="Drone"
-                                    IsChecked="True"
+                                    IsChecked="False"
                                     Grid.Column="0" Grid.Row="1"
                                     VerticalOptions="Start"
                                     x:Name="rdDrone"
                                     Margin="10,0,0,0"/>
                                 <RadioButton 
                                     Content="Car"
-                                    IsChecked="False"
+                                    IsChecked="True"
                                     Grid.Column="0" Grid.Row="2"
                                     VerticalOptions="Start"
                                     x:Name="rdCar"

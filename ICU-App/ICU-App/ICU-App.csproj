@@ -49,13 +49,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
+	  <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
 	  <PackageReference Include="Mapsui.Maui" Version="4.0.0-beta.6" />
+	  <PackageReference Include="Syncfusion.Licensing" Version="20.4.0.48" />
+	  <PackageReference Include="Syncfusion.XlsIO.NET" Version="20.4.0.48" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <MauiXaml Update="View\DebugPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	  </MauiXaml>
 	  <MauiXaml Update="View\SettingsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
@@ -64,6 +67,12 @@
 
 	<ItemGroup>
 	  <Folder Include="Interfaces\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Resources\Keys\License\syncfusion_key_maui.key">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

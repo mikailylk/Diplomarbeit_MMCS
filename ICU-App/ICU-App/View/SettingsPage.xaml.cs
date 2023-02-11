@@ -15,6 +15,7 @@ public partial class SettingsPage : ContentPage
     private void SettingsPage_Loaded(object sender, EventArgs e)
     {
 		_settingsviewmodel.IsActive = true;
+        _settingsviewmodel.SelectNetworkInterface();
     }
 
     protected override void OnNavigatedTo(NavigatedToEventArgs args)

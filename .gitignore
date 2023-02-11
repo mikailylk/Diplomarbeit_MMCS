@@ -15,6 +15,10 @@ templatesTest/
 *.user
 *.userosscache
 *.sln.docstates
+*.key
+/License
+Keys.cs
+/Keys
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

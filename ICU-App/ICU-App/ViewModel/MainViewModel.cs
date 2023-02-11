@@ -78,13 +78,11 @@ public partial class MainViewModel : ObservableRecipient
         }
     }
 
-    protected override async void OnActivated()
+    protected override void OnActivated()
     {
         base.OnActivated();
         Camurl = $"http://{settingsmodel.raspi_ip}:8082/index.html";
 
-        //camurl = new UrlWebViewSource();
-        //camurl.Url = new Uri("https://www.google.de").ToString();
         //UDP-Server erstellen und starten
 
         IPEndPoint socket = new IPEndPoint(IPAddress.Any, 8086); // Empfängersocket für PICO
@@ -99,28 +97,36 @@ public partial class MainViewModel : ObservableRecipient
         _udpclient = UDPClient.ConnectTo(settingsmodel.raspi_ip, 8088);
         _udpclient.cancellationTokenSource = _cancelClientTokenSource;
 
-        // Camurl = @"https://www.google.com";
-        // Camurl = settingsmodel.raspi_ip;
-
         // Kartenmaterial aufbereiten
         SetupMap();
 
         // Server und Client laufenlassen
-        Task.Run(async() => RunServer(), _udplistener.cancellationTokenSource.Token);
+        Task.Run(() => RunServer(), _udplistener.cancellationTokenSource.Token);
 
-        Task.Run(async () => RunClient(), _udpclient.cancellationTokenSource.Token);
+        Task.Run(() => RunClient(), _udpclient.cancellationTokenSource.Token);
+
+        //string filename = Path.Combine(FileSystem.Current.AppDataDirectory, "ICU_Table_05-02-2023.txt");
+        //string filename = Path.Combine("/storage/emulated/0/Documents", "ICU_Table_05-02-2023.txt");
+
+        //File.WriteAllText(filename, "HELLOSOIJDOFI");
+
     }
 
     protected override void OnDeactivated()
     {
         base.OnDeactivated();
-        // TODO: Koordinaten in einer Liste abspeichern --> am Ende die Telemetrydaten und Koordinaten der Drohen & Handy in einem File abspeichern
+        // TODO: Koordinaten in einer Liste abspeichern --> am Ende die Telemetrydaten und Koordinaten der Drohne & Handy in einem File abspeichern
         CancelRequest();
         Cancel_Server();
         Cancel_Client();
 
         _orientationSensor.Stop();
         OrientationSensor.ReadingChanged -= OrientationSensor_ReadingChanged;
+
+        // Abspeicherung der Telemetrie-Daten als CSV
+        TelemetryDataCollection telemetryDatas = new TelemetryDataCollection(_longtitude_phone, _latitude_phone);
+        telemetryDatas.FillWithDummyData();
+        telemetryDatas.SaveToCSVFile();
     }
 
     #region Karte
@@ -251,7 +257,7 @@ public partial class MainViewModel : ObservableRecipient
             while (!_udplistener.cancellationTokenSource.IsCancellationRequested) // udplistener wirft exception (cancelled), when server geschlossen werden soll
             {
                 // Daten von Pico abwarten
-                // var received = await _udplistener.Receive();
+                //var received = await _udplistener.Receive();
                 // Daten an Raspberry Pi Zero verschicken
                 //CommunicationData communicationData = JsonSerializer.Deserialize<CommunicationData>(received.Message.ToString());
                 CommunicationData communicationData = new CommunicationData();
@@ -296,6 +302,7 @@ public partial class MainViewModel : ObservableRecipient
                     Telemetry = telemetryData.ToString();
                 });
                 // TODO: Telemetrydaten in eine Liste geben und am Ende in einem File abspeichern
+                
             }
         }
         catch (Exception ex)
