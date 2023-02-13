@@ -20,11 +20,11 @@ public partial class DebugViewModel : ObservableObject
     Quaternion old_q = new Quaternion(0, 0, 0, 0);
     Quaternion new_q;
 
-    double deltax = 0;
-    double deltaz = 0;
+    //double deltax = 0;
+    //double deltaz = 0;
 
-    double oldx = 0;
-    double oldz = 0;
+    //double oldx = 0;
+    //double oldz = 0;
 
     double x, y, z;
 

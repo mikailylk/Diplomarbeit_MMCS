@@ -8,6 +8,7 @@ namespace ICU_App.Model;
 
 public class SettingsModel
 {
+    public SettingsModel() { }
     public SettingsModel(string raspi_ip)
     {
         this.raspi_ip = raspi_ip;

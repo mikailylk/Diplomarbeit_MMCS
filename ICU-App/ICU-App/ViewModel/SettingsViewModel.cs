@@ -38,7 +38,8 @@ public partial class SettingsViewModel : ObservableRecipient
 
     public SettingsViewModel()
     {
-        settingsmodel = new SettingsModel("192.168.177.10");
+        settingsmodel = new SettingsModel();
+
         // find hostnames in network -> set raspberry pi as server https://stackoverflow.com/questions/4042789/how-to-get-ip-of-all-hosts-in-lan
         hostnames = new ObservableCollection<string>();
     }
@@ -67,7 +68,15 @@ public partial class SettingsViewModel : ObservableRecipient
         {
             if (ni.OperationalStatus == OperationalStatus.Up && ni.NetworkInterfaceType != NetworkInterfaceType.Loopback)
             {
-                _networkInterfaces.Add(ni);
+
+                foreach (UnicastIPAddressInformation IP in ni.GetIPProperties().UnicastAddresses)
+                {
+                    // check if interface is a IPv4 Interface
+                    if (IP.Address.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        _networkInterfaces.Add(ni);
+                    }
+                }
             }
         }
 
@@ -78,28 +87,30 @@ public partial class SettingsViewModel : ObservableRecipient
             buttons[i] = _networkInterfaces[i].Name;
         }
 
-        string interface_name = await Application.Current.MainPage.DisplayActionSheet("Networkinterface", "Close Application", null, buttons);
+        string interface_name;
 
-        // if no interface available or user doesn't select any interface 
-        if (String.IsNullOrEmpty(interface_name) || interface_name == "Close Application")
+        do
         {
+            interface_name = await Application.Current.MainPage.DisplayActionSheet("Networkinterface", "Close Application", null, buttons);
+
+        } while (String.IsNullOrEmpty(interface_name));
+        
+
+        // if no interface selected 
+        if (interface_name == "Close Application")
+        {
+            // Close application
             Application.Current.Quit();
             return;
         }
 
-        foreach (NetworkInterface ni in _networkInterfaces)
-        {
-            if (ni.Name == interface_name)
-            {
-                _selectedInterface = ni;
-                break;
-            }
-        }
+        // Gets selected interface
+        _selectedInterface = _networkInterfaces.Where(ni => ni.Name == interface_name).First();
 
         // Gets Ip Address and Subnetmask
         foreach (UnicastIPAddressInformation ip in _selectedInterface.GetIPProperties().UnicastAddresses)
         {
-            if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+            if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
             {
                 _ipAddress = IPAddress.Parse(ip.Address.ToString());
                 _subnetmask = IPAddress.Parse(ip.IPv4Mask.ToString());
@@ -107,25 +118,8 @@ public partial class SettingsViewModel : ObservableRecipient
             }
         }
 
+        // Send Ping to all users in network
         PingAllUsers();
-
-        //Task.Run(() =>
-        //{
-        //    //string ipBase = "192.168.188.";   // zuhause
-
-
-
-        //    string ipBase = "192.168.137.";     // Handy Hotspot
-        //    for (int i = 1; i < 255; i++)
-        //    {
-        //        string ip = ipBase + i.ToString();
-
-        //        Ping p = new Ping();
-        //        p.SendAsync(ip, 1000, ip);   // 1000 in ms --> Raspberry Pi ist träge und antwortet nicht sehr schnell
-        //        p.PingCompleted += P_PingCompleted;
-        //    }
-        //    return;
-        //});
     }
 
     private void PingAllUsers()
@@ -144,7 +138,7 @@ public partial class SettingsViewModel : ObservableRecipient
                 if (!curr_ip.Equals(_ipAddress))
                 {
                     Ping p = new Ping();
-                    p.SendAsync(curr_ip, 1000, curr_ip);   // 2000 in ms --> Raspberry Pi ist träge und antwortet nicht sehr schnell
+                    p.SendAsync(curr_ip, 1000, curr_ip);
                     p.PingCompleted += P_PingCompleted;
                 }
 

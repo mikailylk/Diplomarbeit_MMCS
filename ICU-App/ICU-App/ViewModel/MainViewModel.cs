@@ -1,25 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ICU_App.Model;
-using ICU_App.View;
 using Mapsui;
-using Mapsui.Layers;
-using Mapsui.Projections;
 using Mapsui.UI.Maui;
 using Mapsui.Utilities;
 using ICU_App.Helper;
 using System.Net;
 using System.Text.Json;
-using Mapsui.Providers.Wms;
-using ExCSS;
 using ICU_App.Calc;
 using System.Numerics;
-using Microsoft.Maui.Devices.Sensors;
 
 namespace ICU_App.ViewModel;
 
@@ -50,13 +39,15 @@ public partial class MainViewModel : ObservableRecipient
     [ObservableProperty]
     private string telemetry;
 
+    private TelemetryDataCollection _telemetryDataCollection;
+
     private IOrientationSensor _orientationSensor;
     private SensorSpeed speed = SensorSpeed.UI;
 
-    AngleCalc calc;
-    Vector3 angles;
+    private AngleCalc _calc;
+    private Vector3 _angles;
 
-    Quaternion originQ = new Quaternion(0, 0, 0, 1);
+    private Quaternion _originQ = new Quaternion(0, 0, 0, 1);
 
     public MainViewModel()
     {}
@@ -73,8 +64,8 @@ public partial class MainViewModel : ObservableRecipient
         if (_orientationSensor.IsSupported)
         {
             OrientationSensor.ReadingChanged += OrientationSensor_ReadingChanged;
-            calc = new AngleCalc();
-            angles = new Vector3();
+            _calc = new AngleCalc();
+            _angles = new Vector3();
         }
     }
 
@@ -97,7 +88,7 @@ public partial class MainViewModel : ObservableRecipient
         _udpclient = UDPClient.ConnectTo(settingsmodel.raspi_ip, 8088);
         _udpclient.cancellationTokenSource = _cancelClientTokenSource;
 
-        // Kartenmaterial aufbereiten
+        // Kartenmaterial aufbereiten und telemetry daten
         SetupMap();
 
         // Server und Client laufenlassen
@@ -105,14 +96,10 @@ public partial class MainViewModel : ObservableRecipient
 
         Task.Run(() => RunClient(), _udpclient.cancellationTokenSource.Token);
 
-        //string filename = Path.Combine(FileSystem.Current.AppDataDirectory, "ICU_Table_05-02-2023.txt");
-        //string filename = Path.Combine("/storage/emulated/0/Documents", "ICU_Table_05-02-2023.txt");
-
-        //File.WriteAllText(filename, "HELLOSOIJDOFI");
 
     }
 
-    protected override void OnDeactivated()
+    protected override async void OnDeactivated()
     {
         base.OnDeactivated();
         // TODO: Koordinaten in einer Liste abspeichern --> am Ende die Telemetrydaten und Koordinaten der Drohne & Handy in einem File abspeichern
@@ -124,9 +111,22 @@ public partial class MainViewModel : ObservableRecipient
         OrientationSensor.ReadingChanged -= OrientationSensor_ReadingChanged;
 
         // Abspeicherung der Telemetrie-Daten als CSV
-        TelemetryDataCollection telemetryDatas = new TelemetryDataCollection(_longtitude_phone, _latitude_phone);
-        telemetryDatas.FillWithDummyData();
-        telemetryDatas.SaveToCSVFile();
+        _telemetryDataCollection.FillWithDummyData();
+        bool savingstat = await _telemetryDataCollection.SaveToCSVFile();
+
+        string message = "Saving the telemetry data succeeded!";
+
+        if (savingstat)
+        {
+            await Shell.Current.DisplayAlert("Information", message, "OK");
+        }
+        else
+        {
+            message = "Saving the telemetry data failed";
+
+            await Shell.Current.DisplayAlert("Information", message, "OK");
+        }
+
     }
 
     #region Karte
@@ -150,6 +150,9 @@ public partial class MainViewModel : ObservableRecipient
 
         //Location vom Smartphone GPS holen
         await GetCurrentLocation();
+
+        // setup telemetry data collection
+        _telemetryDataCollection = new TelemetryDataCollection(_longtitude_phone, _latitude_phone);
 
         #region Punkt zoomen
         //Position pos = new Position(47.271408, 9.624545);
@@ -266,9 +269,9 @@ public partial class MainViewModel : ObservableRecipient
                 communicationData.Roll = 5;
                 communicationData.Power = 10;
                 // TODO: Daten von Orientationsensor holen
-                communicationData.PitchG = (int)angles.Z;
-                communicationData.YawG = (int)angles.X;
-                communicationData.RollG = (int)angles.Y;
+                communicationData.PitchG = (int)_angles.Z;
+                communicationData.YawG = (int)_angles.X;
+                communicationData.RollG = (int)_angles.Y;
 
                 string message = JsonSerializer.Serialize(communicationData);
 
@@ -302,7 +305,11 @@ public partial class MainViewModel : ObservableRecipient
                     Telemetry = telemetryData.ToString();
                 });
                 // TODO: Telemetrydaten in eine Liste geben und am Ende in einem File abspeichern
-                
+                // for now, just get long & lat of smartphone once and write it as location
+                telemetryData.LONGTITUDE_SMARTPHONE = _longtitude_phone;
+                telemetryData.LATITUDE_SMARTPHONE = _latitude_phone;
+
+                _telemetryDataCollection.Add(telemetryData);
             }
         }
         catch (Exception ex)
@@ -315,17 +322,17 @@ public partial class MainViewModel : ObservableRecipient
     {
         // https://stackoverflow.com/questions/54540095/xamarin-orientation-sensor-quaternion
 
-        if (originQ == Quaternion.Identity)
+        if (_originQ == Quaternion.Identity)
         {
-            originQ = Quaternion.Inverse(e.Reading.Orientation);
+            _originQ = Quaternion.Inverse(e.Reading.Orientation);
         }
 
-        var q = Quaternion.Multiply(originQ, e.Reading.Orientation);
+        var q = Quaternion.Multiply(_originQ, e.Reading.Orientation);
 
-        angles = calc.quaternion2Euler(q, AngleCalc.RotSeq.YZX);
+        _angles = _calc.quaternion2Euler(q, AngleCalc.RotSeq.YZX);
 
         // TODO: Winkel immer zwischen 0 und 360°
-        string s = $"Dir\n\rPitch: {(double)(angles.Z)} \n\rRoll {(double)(angles.Y)} \n\rYaw {(double)angles.X}\n\r";
+        string s = $"Dir\n\rPitch: {(double)(_angles.Z)} \n\rRoll {(double)(_angles.Y)} \n\rYaw {(double)_angles.X}\n\r";
     }
 
     [RelayCommand]
@@ -351,10 +358,10 @@ public partial class MainViewModel : ObservableRecipient
         {
             return;
         }
-        originQ.X = 0;
-        originQ.Y = 0;
-        originQ.Z = 0;
-        originQ.W = 1;
+        _originQ.X = 0;
+        _originQ.Y = 0;
+        _originQ.Z = 0;
+        _originQ.W = 1;
     }
 
     private void Cancel_Server()
