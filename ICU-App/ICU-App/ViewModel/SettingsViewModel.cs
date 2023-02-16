@@ -202,7 +202,8 @@ public partial class SettingsViewModel : ObservableRecipient
     private async Task NavigateLogPage()
     {
         // TODO: alte Flugdaten (Batteriespannung, Koordinaten, ...) in einem Chart bzw. in einer Tabelle darstellen
-        // await Shell.Current.GoToAsync($"{nameof(LogPage)}");
-        await Shell.Current.DisplayAlert("Attention", "This feature is currently not awailable!", "OK");
+        //await Shell.Current.DisplayAlert("Attention", "This feature is currently not awailable!", "OK");
+        await Shell.Current.GoToAsync($"{nameof(LogPage)}");
+
     }
 }

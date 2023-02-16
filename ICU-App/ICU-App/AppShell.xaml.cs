@@ -10,6 +10,7 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
 		Routing.RegisterRoute(nameof(MainPage), typeof(MainPage));
 		Routing.RegisterRoute(nameof(DebugPage), typeof(DebugPage));
+		Routing.RegisterRoute(nameof(LogPage), typeof(LogPage));
 	}
 
 	// TODO: Navigation mit Flyout herausfinden (ist dies überhaupt möglich, inklusive Daten zu übertragen)

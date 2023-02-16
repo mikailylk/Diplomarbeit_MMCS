@@ -35,6 +35,13 @@ public partial class MainPage : ContentPage
         _mainViewModel.IsActive = true;
     }
 
+    protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+    {
+        base.OnNavigatedFrom(args);
+        _mainViewModel.IsActive = false;
+    }
+
+    // need to check if neccessary
     private void MainPage_Loaded(object sender, EventArgs e)
     {
         // MainView ist geladen --> relevante Daten bearbeiten

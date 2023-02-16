@@ -2,11 +2,80 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ICU_App.View.LogPage"
-             Title="LogPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             xmlns:viewmodel="clr-namespace:ICU_App.ViewModel"
+             x:DataType="viewmodel:LogViewModel"
+             xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
+             Title="Logs">
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Label Text="Select the date:" 
+                   VerticalOptions="Center"
+                   Grid.Column="0"/>
+            <Picker ItemsSource="{Binding Available_data}"
+                SelectedIndex="{Binding Selected_av_data_index, Mode=TwoWay}"
+                    VerticalOptions="Center"
+                    Grid.Column="1"/>
+        </Grid>
+        <chart:SfCartesianChart Grid.Row="1" BackgroundColor="Beige">
+
+            <chart:SfCartesianChart.XAxes>
+                <chart:DateTimeAxis 
+                    IntervalType="Seconds">
+                    <chart:DateTimeAxis.LabelStyle>
+                        <chart:ChartAxisLabelStyle
+                            LabelFormat="dd-MM-yyyy hh:mm:ss"/>
+                    </chart:DateTimeAxis.LabelStyle>
+                </chart:DateTimeAxis>
+            </chart:SfCartesianChart.XAxes>
+
+            <chart:SfCartesianChart.YAxes>
+                <chart:NumericalAxis Name="primaryY">
+                    <chart:NumericalAxis.Title>
+                        <chart:ChartAxisTitle Text="Current [A]"/>
+                    </chart:NumericalAxis.Title>
+                </chart:NumericalAxis>
+
+                <chart:NumericalAxis Name="secondaryY"  CrossesAt="{Static x:Double.MaxValue}">
+                    <chart:NumericalAxis.Title>
+                        <chart:ChartAxisTitle Text="Voltage [V]"/>
+                    </chart:NumericalAxis.Title>
+                </chart:NumericalAxis>
+            </chart:SfCartesianChart.YAxes>
+
+            <chart:SfCartesianChart.Series>
+                <chart:LineSeries XBindingPath="x_dt" YBindingPath="y_battamp"
+                                  ItemsSource="{Binding Telemetry_data_chart_collection}"
+                                  ShowMarkers="True"
+                                  YAxisName="primaryY" Label="Battery Current"/>
+                
+                <chart:LineSeries XBindingPath="x_dt" YBindingPath="y_boardamp"
+                                  ItemsSource="{Binding Telemetry_data_chart_collection}"
+                                  ShowMarkers="True"
+                                  YAxisName="primaryY" Label="Board Current"/>
+                
+                <chart:LineSeries XBindingPath="x_dt" YBindingPath="y_battvolt"
+                                  ItemsSource="{Binding Telemetry_data_chart}"
+                                  ShowMarkers="True"
+                                  YAxisName="secondaryY" Label="Battery Voltage"/>
+            </chart:SfCartesianChart.Series>
+
+            <chart:SfCartesianChart.Legend>
+                <chart:ChartLegend/>
+            </chart:SfCartesianChart.Legend>
+
+            <chart:SfCartesianChart.ZoomPanBehavior>
+                <chart:ChartZoomPanBehavior ZoomMode="XY" />
+            </chart:SfCartesianChart.ZoomPanBehavior>
+
+        </chart:SfCartesianChart>
+    </Grid>
 </ContentPage>

@@ -111,18 +111,21 @@ public partial class MainViewModel : ObservableRecipient
         OrientationSensor.ReadingChanged -= OrientationSensor_ReadingChanged;
 
         // Abspeicherung der Telemetrie-Daten als CSV
-        _telemetryDataCollection.FillWithDummyData();
+        _telemetryDataCollection.FillWithDummyData(_longtitude_phone, _latitude_phone);
+        bool saving_json_stat = await _telemetryDataCollection.SaveToJSON();
         bool savingstat = await _telemetryDataCollection.SaveToCSVFile();
 
-        string message = "Saving the telemetry data succeeded!";
+        string message = "Saving the telemetry data succeeded!\n\r" +
+            $"JSON: {saving_json_stat}\n\rCSV: {savingstat}";
 
-        if (savingstat)
+        if (savingstat && saving_json_stat)
         {
             await Shell.Current.DisplayAlert("Information", message, "OK");
         }
         else
         {
-            message = "Saving the telemetry data failed";
+            message = "Saving the telemetry data failed\r\n" +
+                $"JSON: {saving_json_stat}\n\rCSV: {savingstat}";
 
             await Shell.Current.DisplayAlert("Information", message, "OK");
         }
@@ -309,7 +312,7 @@ public partial class MainViewModel : ObservableRecipient
                 telemetryData.LONGTITUDE_SMARTPHONE = _longtitude_phone;
                 telemetryData.LATITUDE_SMARTPHONE = _latitude_phone;
 
-                _telemetryDataCollection.Add(telemetryData);
+                _telemetryDataCollection.telemetryDataCollection.Add(telemetryData);
             }
         }
         catch (Exception ex)
