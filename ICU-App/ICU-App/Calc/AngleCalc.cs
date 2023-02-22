@@ -9,21 +9,16 @@ namespace ICU_App.Calc
 {
     public class AngleCalc
     {
-        #region c
-        public AngleCalc()
-        {
-        }
-        #endregion
-
+        public AngleCalc(){}
 
         /// <summary>
-        /// returns Vector3 X,Y,Z representing different angles in Euler
+        /// Returns Vector3 X,Y,Z representing different angles in Euler
         /// </summary>
         /// <param name="q">Quaternion</param>
-        /// <returns></returns>
+        /// <returns>Vector3 Euler angles</returns>
         public Vector3 ToEulerAngles(Quaternion q)
         {
-            // Z-Y-X Konvention (Tayt-Brian)
+            // Z-Y-X convention (Tayt-Brian)
             Vector3 angles = new();
 
             // roll / x
@@ -51,11 +46,23 @@ namespace ICU_App.Calc
             return angles;
         }
 
+        /// <summary>
+        /// Enumeration of possible rotation sequence types
+        /// </summary>
         public enum RotSeq
         {
             ZYX, ZYZ, ZXY, ZXZ, YXZ, YXY, YZX, YZY, XYZ, XYX, XZY, XZX
         };
 
+        /// <summary>
+        /// Calculates the Euler angles using a two-axis rotation sequence
+        /// </summary>
+        /// <param name="r11"></param>
+        /// <param name="r12"></param>
+        /// <param name="r21"></param>
+        /// <param name="r31"></param>
+        /// <param name="r32"></param>
+        /// <returns>Vector3 angles</returns>
         Vector3 twoaxisrot(float r11, float r12, float r21, float r31, float r32)
         {
             Vector3 ret = new Vector3
@@ -67,6 +74,15 @@ namespace ICU_App.Calc
             return ret;
         }
 
+        /// <summary>
+        /// Calculates the Euler angles using a three-axis rotation sequence
+        /// </summary>
+        /// <param name="r11"></param>
+        /// <param name="r12"></param>
+        /// <param name="r21"></param>
+        /// <param name="r31"></param>
+        /// <param name="r32"></param>
+        /// <returns>Vector3 angles</returns>
         Vector3 threeaxisrot(float r11, float r12, float r21, float r31, float r32)
         {
             Vector3 ret = new Vector3
@@ -78,6 +94,14 @@ namespace ICU_App.Calc
             return ret;
         }
 
+        /// <summary>
+        /// Calculates the three Euler angles (in degrees) corresponding to a 
+        /// given quaternion rotation and the given rotation order.
+        /// </summary>
+        /// <param name="q">The quaternion to convert to Euler angles.</param>
+        /// <param name="rotSeq">The rotation sequence order.</param>
+        /// <returns>The Euler angles as a Vector3, depending on the specified 
+        /// rotation order.</returns>
         public Vector3 quaternion2Euler(Quaternion q, RotSeq rotSeq)
         {
             switch (rotSeq)

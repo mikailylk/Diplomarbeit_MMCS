@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using ICU_App.Helper;
+using CommunityToolkit.Mvvm.Input;
+using ICU_App.Model;
+using Mapsui.UI.Maui;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,6 +23,20 @@ public partial class LogViewModel : ObservableRecipient
     [ObservableProperty]
     private TelemetryDataChartModelCollection telemetry_data_chart_collection;
 
+    [ObservableProperty]
+    private bool ischecked_diagram = true;
+
+    [ObservableProperty]
+    private bool ischecked_trace = false;
+
+    [ObservableProperty]
+    private bool isChartVisible = true;
+
+    [ObservableProperty]
+    private bool isMapVisible = false;
+
+    [ObservableProperty]
+    MapView mapView;
 
     private TelemetryDataCollection _telemetryDataCollection;
 
@@ -30,22 +46,67 @@ public partial class LogViewModel : ObservableRecipient
         telemetry_data_chart_collection = new TelemetryDataChartModelCollection();
     }
 
+    [RelayCommand]
+    private void ExecuteRBChangedCommand(string selection_type)
+    {
+        if(selection_type == "Show diagram")
+        {
+            Ischecked_trace = false;
+            Ischecked_diagram = true;
+            IsChartVisible = true;
+            IsMapVisible = false;
+        }
+        else
+        {
+            Ischecked_trace = true;
+            Ischecked_diagram = false;
+            IsChartVisible = false;
+            IsMapVisible = true;
+        }
+    }
+
     partial void OnSelected_av_data_indexChanged(int value)
     {
 
-        Task<bool> task = Task.Run(async () =>
+        if(Selected_av_data_index >= 0)
         {
-            return await _telemetryDataCollection.ReadFromJSON(
-                            DateTime.ParseExact(Available_data[Selected_av_data_index].Split(" ")[1], 
-                            "dd-MM-yyyy--HH-mm-ss", CultureInfo.InvariantCulture),
-                            DateTime.ParseExact(Available_data[Selected_av_data_index].Split(" ")[3], 
-                            "dd-MM-yyyy--HH-mm-ss", CultureInfo.InvariantCulture));
-        });
-        bool loaded = task.Result;
-        if (loaded)
-        {
-            Telemetry_data_chart_collection = TelemetryDataChartModelCollection.ParseTelemetryDataCollection(_telemetryDataCollection);
+            Task<bool> task = Task.Run(async () =>
+            {
+                return await _telemetryDataCollection.ReadFromJSON(
+                                DateTime.ParseExact(Available_data[Selected_av_data_index].Split(" ")[1],
+                                "dd-MM-yyyy--HH-mm-ss", CultureInfo.InvariantCulture),
+                                DateTime.ParseExact(Available_data[Selected_av_data_index].Split(" ")[3],
+                                "dd-MM-yyyy--HH-mm-ss", CultureInfo.InvariantCulture));
+            });
+            bool loaded = task.Result;
+
+            if (loaded)
+            {
+                Telemetry_data_chart_collection = TelemetryDataChartModelCollection.ParseTelemetryDataCollection(_telemetryDataCollection);
+
+                List<double> longitude = new List<double>();
+                List<double> latitude = new List<double>();
+
+
+                for (int i = 0; i < _telemetryDataCollection.telemetryDataCollection.Count; i++)
+                {
+                   
+                    longitude.Add(_telemetryDataCollection.telemetryDataCollection[i].LONGITUDE);
+                    latitude.Add(_telemetryDataCollection.telemetryDataCollection[i].LATITUDE);
+                }
+
+                double longitudemin = longitude.Min();
+                double latitudemin = latitude.Min();
+
+                double longitudemax = longitude.Max();
+                double latitudemax = latitude.Max();
+
+                Mapsui_Map.DrawTrace(MapView, longitude, latitude);
+                // Mapsui_Map.ZoomToPoint(longitudemin, latitudemin, MapView);
+                Mapsui_Map.ZoomToRectangle(longitudemax, latitudemax, longitudemin, latitudemin, MapView);
+            }
         }
+        
     }
 
     protected override async void OnActivated()
@@ -56,6 +117,7 @@ public partial class LogViewModel : ObservableRecipient
 
         if (Available_data != null)
         {
+            Mapsui_Map.SetupMapMaterial(MapView);
             Selected_av_data_index = 0;
         }
         else

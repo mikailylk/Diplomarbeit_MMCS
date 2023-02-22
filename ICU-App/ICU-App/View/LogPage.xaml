@@ -5,15 +5,17 @@
              xmlns:viewmodel="clr-namespace:ICU_App.ViewModel"
              x:DataType="viewmodel:LogViewModel"
              xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
              Title="Logs">
     <Grid Margin="5">
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="80"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             
@@ -24,8 +26,22 @@
                 SelectedIndex="{Binding Selected_av_data_index, Mode=TwoWay}"
                     VerticalOptions="Center"
                     Grid.Column="1"/>
+            <VerticalStackLayout Grid.Column="2">
+                <RadioButton Content="Show diagram" IsChecked="{Binding Ischecked_diagram}">
+                    <RadioButton.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ExecuteRBChangedCommandCommand}" 
+                                              CommandParameter="Show diagram" />
+                    </RadioButton.GestureRecognizers>
+                </RadioButton>
+                <RadioButton Content="Show trace" IsChecked="{Binding Ischecked_trace}">
+                    <RadioButton.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ExecuteRBChangedCommandCommand}" 
+                                              CommandParameter="Show trace" />
+                    </RadioButton.GestureRecognizers>
+                </RadioButton>
+            </VerticalStackLayout>
         </Grid>
-        <chart:SfCartesianChart Grid.Row="1" BackgroundColor="Beige">
+        <chart:SfCartesianChart Grid.Row="1" BackgroundColor="Beige" IsVisible="{Binding IsChartVisible}">
 
             <chart:SfCartesianChart.XAxes>
                 <chart:DateTimeAxis 
@@ -77,5 +93,12 @@
             </chart:SfCartesianChart.ZoomPanBehavior>
 
         </chart:SfCartesianChart>
+
+        <mapsui:MapView 
+                x:Name="mapView"
+                BackgroundColor="Gray" 
+                Grid.Column="0" Grid.Row="2" Grid.RowSpan="2" Grid.ColumnSpan="2"
+                ZIndex="3" Margin="5"
+                IsVisible="{Binding IsMapVisible}"/>
     </Grid>
 </ContentPage>

@@ -79,10 +79,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Interfaces\" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <None Update="Resources\Keys\License\syncfusion_key_maui.key">
 	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	  </None>

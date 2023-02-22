@@ -9,6 +9,7 @@ using System.Net;
 using System.Text.Json;
 using ICU_App.Calc;
 using System.Numerics;
+using System.Diagnostics;
 
 namespace ICU_App.ViewModel;
 
@@ -24,7 +25,7 @@ public partial class MainViewModel : ObservableRecipient
     [ObservableProperty]
     Mapsui.UI.Maui.MapView mapView;
 
-    private double _longtitude_phone;
+    private double _longitude_phone;
     private double _latitude_phone;
 
     private CancellationTokenSource _cancelTokenSource;
@@ -88,7 +89,7 @@ public partial class MainViewModel : ObservableRecipient
         _udpclient = UDPClient.ConnectTo(settingsmodel.raspi_ip, 8088);
         _udpclient.cancellationTokenSource = _cancelClientTokenSource;
 
-        // Kartenmaterial aufbereiten und telemetry daten
+        // Kartenmaterial aufbereiten
         SetupMap();
 
         // Server und Client laufenlassen
@@ -111,7 +112,7 @@ public partial class MainViewModel : ObservableRecipient
         OrientationSensor.ReadingChanged -= OrientationSensor_ReadingChanged;
 
         // Abspeicherung der Telemetrie-Daten als CSV
-        _telemetryDataCollection.FillWithDummyData(_longtitude_phone, _latitude_phone);
+        _telemetryDataCollection.FillWithDummyData(_longitude_phone, _latitude_phone);
         bool saving_json_stat = await _telemetryDataCollection.SaveToJSON();
         bool savingstat = await _telemetryDataCollection.SaveToCSVFile();
 
@@ -132,58 +133,18 @@ public partial class MainViewModel : ObservableRecipient
 
     }
 
-    #region Karte
     private async void SetupMap()
     {
-        mapView.Map.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer());
-        mapView.Map.CRS = "EPSG:4326";  // Longtitude Latitude verwenden
 
-        mapView.Map.Widgets.Clear();
-
-        mapView.Pins.Add(new Mapsui.UI.Maui.Pin()
-        {
-            Position = new Position(47.271408, 9.624545),
-            Type = PinType.Pin,
-            Label = "Zero point",
-            Address = "Zero point",
-            Scale = 0.7F
-        });
-
-        // mapView.Pins.Remove()
+        Mapsui_Map.SetupMapMaterial(MapView);
+        Mapsui_Map.DrawRedPin(MapView, 9.624545, 47.271408);
 
         //Location vom Smartphone GPS holen
         await GetCurrentLocation();
 
         // setup telemetry data collection
-        _telemetryDataCollection = new TelemetryDataCollection(_longtitude_phone, _latitude_phone);
+        _telemetryDataCollection = new TelemetryDataCollection(_longitude_phone, _latitude_phone);
 
-        #region Punkt zoomen
-        //Position pos = new Position(47.271408, 9.624545);
-        //MPoint mp = pos.ToMapsui();
-
-        //mapView.Navigator.NavigateTo(mp, mapView.Map.Resolutions[16]);
-        #endregion Punkt zoomen
-
-
-        #region rect
-        //Position dronepos = new Position(47.271408 + 0.001, 9.624545 + 0.001);
-        //MPoint mpdrone = dronepos.ToMapsui();
-
-        //Position pos = new Position(47.271408 - 0.0001, 9.624545 - 0.0001);
-        //MPoint mp = pos.ToMapsui();
-
-
-        //double x = mp.X;
-        //double y = mp.Y;
-
-
-        //double x2 = mpdrone.X;
-        //double y2 = mpdrone.Y;
-
-        //MRect rect = new MRect(x, y, x2, y2);
-
-        //mapView.Navigator.NavigateTo(rect, ScaleMethod.Fit, 0);
-        #endregion
 
         #region Tracezeichnen
         //// Trace einzeichnen https://github.com/Mapsui/Mapsui/blob/master/Samples/Mapsui.Samples.Forms/Mapsui.Samples.Forms.Shared/PolylineSample.cs
@@ -203,58 +164,6 @@ public partial class MainViewModel : ObservableRecipient
         #endregion
     }
 
-    private void ZoomToPoint(double longtitude, double latitude, Mapsui.UI.Maui.MapView mpview)
-    {
-        // Die Koordinaten in einen Punkt umwandeln und auf Karte hineinzoomen
-        Position currentpos = new Position(latitude, longtitude);
-        mapView.MyLocationLayer.UpdateMyLocation(currentpos);
-        MPoint currentpos_point = currentpos.ToMapsui();
-
-        // Hineinzoomen
-        mapView.Navigator.NavigateTo(currentpos_point, mapView.Map.Resolutions[19]);
-    }
-
-    private void ZoomToRectangle(double longtitude_rc_device, double latitude_rc_device)
-    {
-        Position rcdevice_pos = new Position(47.271408 + 0.001, 9.624545 + 0.001);
-        MPoint mp_rcdevice = rcdevice_pos.ToMapsui();
-
-        Position phone_pos = new Position(47.271408 - 0.0001, 9.624545 - 0.0001);
-        MPoint mp_phone = phone_pos.ToMapsui();
-
-        // x1 --> Bottom Left
-        // x2 --> Top Right
-        // y1 --> Bottom Left
-        // y2 --> Top Right
-
-
-        double x1 = mp_phone.X;
-        double y1 = mp_phone.Y;
-
-        double x2 = mp_rcdevice.X;
-        double y2 = mp_rcdevice.Y;
-
-        double x_temp;
-        double y_temp;
-
-        if (x1 > x2)
-        {
-            x_temp = x2;
-            x2 = x1;
-            x1 = x_temp;
-        }
-        if (y1 > y2)
-        {
-            y_temp = y2;
-            y2 = y1;
-            y1 = y_temp;
-        }
-        MRect rect = new MRect(x1, y1, x2, y2);
-
-        mapView.Navigator.NavigateTo(rect, ScaleMethod.Fit, 0);
-    }
-    #endregion
-
 
     private async void RunServer()
     {
@@ -263,18 +172,26 @@ public partial class MainViewModel : ObservableRecipient
             while (!_udplistener.cancellationTokenSource.IsCancellationRequested) // udplistener wirft exception (cancelled), when server geschlossen werden soll
             {
                 // Daten von Pico abwarten
-                //var received = await _udplistener.Receive();
+                var received = await _udplistener.Receive();
                 // Daten an Raspberry Pi Zero verschicken
-                //CommunicationData communicationData = JsonSerializer.Deserialize<CommunicationData>(received.Message.ToString());
-                CommunicationData communicationData = new CommunicationData();
-                communicationData.Yaw = 5;
-                communicationData.Pitch = 10;
-                communicationData.Roll = 5;
-                communicationData.Power = 10;
+                CommunicationData communicationData = JsonSerializer.Deserialize<CommunicationData>(received.Message.ToString());
+
+                // {"Pitch":999,"Roll":555,"Yaw":888,"Power":666,"PitchG":777,"RollG":766,"YawG":944}
+
+                //CommunicationData communicationData = new CommunicationData();
+                //communicationData.Yaw = 5;
+                //communicationData.Pitch = 10;
+                //communicationData.Roll = 5;
+                //communicationData.Power = 10;
                 // TODO: Daten von Orientationsensor holen
-                communicationData.PitchG = (int)_angles.Z;
-                communicationData.YawG = (int)_angles.X;
-                communicationData.RollG = (int)_angles.Y;
+                //communicationData.PitchG = (int)_angles.Z;
+                //communicationData.YawG = (int)_angles.X;
+                //communicationData.RollG = (int)_angles.Y;
+
+                communicationData.PitchG = (int)15;
+                communicationData.YawG = (int)14;
+                communicationData.RollG = (int)12;
+
 
                 string message = JsonSerializer.Serialize(communicationData);
 
@@ -309,7 +226,7 @@ public partial class MainViewModel : ObservableRecipient
                 });
                 // TODO: Telemetrydaten in eine Liste geben und am Ende in einem File abspeichern
                 // for now, just get long & lat of smartphone once and write it as location
-                telemetryData.LONGTITUDE_SMARTPHONE = _longtitude_phone;
+                telemetryData.LONGITUDE_SMARTPHONE = _longitude_phone;
                 telemetryData.LATITUDE_SMARTPHONE = _latitude_phone;
 
                 _telemetryDataCollection.telemetryDataCollection.Add(telemetryData);
@@ -399,10 +316,10 @@ public partial class MainViewModel : ObservableRecipient
 
             if (location != null)
             {
-                _longtitude_phone = location.Longitude;
+                _longitude_phone = location.Longitude;
                 _latitude_phone = location.Latitude;
 
-                ZoomToPoint(location.Longitude, location.Latitude, MapView);
+                Mapsui_Map.ZoomToPoint(location.Longitude, location.Latitude, MapView);
             }
         }
 

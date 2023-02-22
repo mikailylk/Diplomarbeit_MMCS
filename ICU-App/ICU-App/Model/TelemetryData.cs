@@ -18,7 +18,7 @@ using System.Xml;
 using Microsoft.Maui.Storage;
 using System.Collections.ObjectModel;
 
-namespace ICU_App.Helper;
+namespace ICU_App.Model;
 
 public class TelemetryData
 {
@@ -30,10 +30,10 @@ public class TelemetryData
     public double HYDRO { get; set; }
     public double TEMP { get; set; }
     public double PRESSURE { get; set; }
-    public double LONGTITUDE { get; set; }
+    public double LONGITUDE { get; set; }
     public double LATITUDE { get; set; }
 
-    public double? LONGTITUDE_SMARTPHONE { get; set; }
+    public double? LONGITUDE_SMARTPHONE { get; set; }
     public double? LATITUDE_SMARTPHONE { get; set; }
 
     public override string ToString()
@@ -42,7 +42,7 @@ public class TelemetryData
             $"\nBatterystatus: {BATT_AMP}A, {BATT_VOLT}V\n" +
             $"Board current: {BOARD_AMP}A\n" +
             $"Hydro: {HYDRO}, Temperature: {TEMP}°C, Pressure: {PRESSURE}\n" +
-            $"Location: Longtitude: {LONGTITUDE}; Latitude: {LATITUDE}";
+            $"Location: Longitude: {LONGITUDE}; Latitude: {LATITUDE}";
     }
 }
 
@@ -51,7 +51,7 @@ public class TelemetryDataCollection
     public List<TelemetryData> telemetryDataCollection;
 
     // save smartphone coordinates only for once (for now)
-    private double _LONGTITUDE_SMARTPHONE;
+    private double _LONGITUDE_SMARTPHONE;
     private double _LATITUDE_SMARTPHONE;
     private DateTime _start_time;
 
@@ -62,10 +62,10 @@ public class TelemetryDataCollection
     {
         telemetryDataCollection = new List<TelemetryData>();
     }
-    public TelemetryDataCollection(double LONGTITUDE_SMARTPHONE, double LATITUDE_SMARTPHONE)
+    public TelemetryDataCollection(double LONGITUDE_SMARTPHONE, double LATITUDE_SMARTPHONE)
     {
         // get location of smartphone for once and write it as every location
-        this._LONGTITUDE_SMARTPHONE = LONGTITUDE_SMARTPHONE;
+        this._LONGITUDE_SMARTPHONE = LONGITUDE_SMARTPHONE;
         this._LATITUDE_SMARTPHONE = LATITUDE_SMARTPHONE;
 
         // start time
@@ -104,9 +104,9 @@ public class TelemetryDataCollection
                 worksheet.Range["E1"].Value = nameof(TelemetryData.HYDRO);
                 worksheet.Range["F1"].Value = nameof(TelemetryData.TEMP);
                 worksheet.Range["G1"].Value = nameof(TelemetryData.PRESSURE);
-                worksheet.Range["H1"].Value = nameof(TelemetryData.LONGTITUDE);
+                worksheet.Range["H1"].Value = nameof(TelemetryData.LONGITUDE);
                 worksheet.Range["I1"].Value = nameof(TelemetryData.LATITUDE);
-                worksheet.Range["J1"].Value = nameof(TelemetryData.LONGTITUDE_SMARTPHONE);
+                worksheet.Range["J1"].Value = nameof(TelemetryData.LONGITUDE_SMARTPHONE);
                 worksheet.Range["K1"].Value = nameof(TelemetryData.LATITUDE_SMARTPHONE);
 
                 // mark headlines bold
@@ -119,21 +119,21 @@ public class TelemetryDataCollection
                 {
                     worksheet.Range[i, 1].Text = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).
                         AddSeconds((double)telemetryDataCollection[i - 2].TIMESTAMP).ToLocalTime().ToString();
-                    worksheet.Range[i, 1].NumberFormat = "TT.MM.JJJJ hh:mm";
+                    // worksheet.Range[i, 1].NumberFormat = "TT.MM.JJJJ hh:mm";     // not needed
                     worksheet.Range[i, 2].Value2 = telemetryDataCollection[i - 2].BATT_AMP;
                     worksheet.Range[i, 3].Value2 = telemetryDataCollection[i - 2].BATT_VOLT;
                     worksheet.Range[i, 4].Value2 = telemetryDataCollection[i - 2].BOARD_AMP;
                     worksheet.Range[i, 5].Value2 = telemetryDataCollection[i - 2].HYDRO;
                     worksheet.Range[i, 6].Value2 = telemetryDataCollection[i - 2].TEMP;
                     worksheet.Range[i, 7].Value2 = telemetryDataCollection[i - 2].PRESSURE;
-                    worksheet.Range[i, 8].Value2 = telemetryDataCollection[i - 2].LONGTITUDE;
+                    worksheet.Range[i, 8].Value2 = telemetryDataCollection[i - 2].LONGITUDE;
                     worksheet.Range[i, 9].Value2 = telemetryDataCollection[i - 2].LATITUDE;
 
                     // for now, get location of smartphone just once and write it to Attribute
-                    telemetryDataCollection[i - 2].LONGTITUDE_SMARTPHONE = _LONGTITUDE_SMARTPHONE;
+                    telemetryDataCollection[i - 2].LONGITUDE_SMARTPHONE = _LONGITUDE_SMARTPHONE;
                     telemetryDataCollection[i - 2].LATITUDE_SMARTPHONE = _LATITUDE_SMARTPHONE;
 
-                    worksheet.Range[i, 10].Value2 = telemetryDataCollection[i - 2].LONGTITUDE_SMARTPHONE;
+                    worksheet.Range[i, 10].Value2 = telemetryDataCollection[i - 2].LONGITUDE_SMARTPHONE;
                     worksheet.Range[i, 11].Value2 = telemetryDataCollection[i - 2].LATITUDE_SMARTPHONE;
                 }
                 for (int i = 1; i < 12; i++)
@@ -141,7 +141,7 @@ public class TelemetryDataCollection
                     worksheet.AutofitColumn(i);
                 }
 
-                #region Strom_Spannung_Diagramm
+                #region Current_Voltage_Diagram
                 IChartShape chart_volt_amp = worksheet.Charts.Add();
                 chart_volt_amp.Name = "Voltage & Current Consumption";
                 chart_volt_amp.ChartTitle = "Voltage & Current Consumption";
@@ -168,7 +168,7 @@ public class TelemetryDataCollection
                 chart_volt_amp.SecondaryValueAxis.Title = "Voltage [V]";
                 #endregion
 
-                // Gridlines aktivieren
+                // activate gridlines
                 chart_volt_amp.PrimaryValueAxis.HasMajorGridLines = true;
                 chart_volt_amp.PrimaryCategoryAxis.HasMajorGridLines = true;
 
@@ -178,7 +178,7 @@ public class TelemetryDataCollection
                 chart_volt_amp.RightColumn = 42;
                 chart_volt_amp.BottomRow = 42;
 
-                //workbook abspeichern
+                // save workbook
                 FileStream stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite);
                 workbook.SaveAs(stream);
                 stream.Dispose();
@@ -293,7 +293,7 @@ public class TelemetryDataCollection
         return true;
     }
 
-    public void FillWithDummyData(double longtitude_smartphone, double latitude_smartphone)
+    public void FillWithDummyData(double longitude_smartphone, double latitude_smartphone)
     {
         Random random = new Random();
 
@@ -302,18 +302,19 @@ public class TelemetryDataCollection
         for (int i = 0; i < 60; i++)
         {
             double r = random.NextDouble();
+            double g = random.NextDouble();
             TelemetryData telemetryData = new TelemetryData()
             {
                 TIMESTAMP = (double)dt.Subtract(new DateTime(1970, 1, 1, 0, 0, 59 - i)).TotalSeconds,
-                BATT_AMP = 14 * r, BATT_VOLT = 12 * r, BOARD_AMP = 2 * r,
+                BATT_AMP = 14 * r, BATT_VOLT = 12 * g, BOARD_AMP = 2 * r,
                 HYDRO = 10 * r, PRESSURE = 1013 * r, TEMP = 23 * r,
-                LONGTITUDE = 49.452, LATITUDE = 9.854,
-                LONGTITUDE_SMARTPHONE = longtitude_smartphone, LATITUDE_SMARTPHONE = latitude_smartphone
+                LONGITUDE = 9.854 + 0.5*r, LATITUDE = 49.452 + 0.5*g,
+                LONGITUDE_SMARTPHONE = longitude_smartphone, LATITUDE_SMARTPHONE = latitude_smartphone
             };
             telemetryDataCollection.Add(telemetryData);
         }
 
-        //string parsetext = """{"TIMESTAMP":1676301385.0022044,"BATT_AMP":2.594517762355612,"BATT_VOLT":2.223872367733382,"BOARD_AMP":0.37064539462223034,"HYDRO":1.8532269731111517,"TEMP":4.262422038155649,"PRESSURE":187.73189237615966,"LONGTITUDE":49.452,"LATITUDE":9.854}""";
+        //string parsetext = """{"TIMESTAMP":1676301385.0022044,"BATT_AMP":2.594517762355612,"BATT_VOLT":2.223872367733382,"BOARD_AMP":0.37064539462223034,"HYDRO":1.8532269731111517,"TEMP":4.262422038155649,"PRESSURE":187.73189237615966,"LONGITUDE":49.452,"LATITUDE":9.854}""";
 
         //try
         //{

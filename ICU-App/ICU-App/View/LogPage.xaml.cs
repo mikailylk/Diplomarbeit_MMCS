@@ -10,7 +10,8 @@ public partial class LogPage : ContentPage
 		InitializeComponent();
 		BindingContext = vm;
 		_logViewModel = vm;
-	}
+        _logViewModel.MapView = mapView;
+    }
 
     protected override void OnNavigatedTo(NavigatedToEventArgs args)
     {
