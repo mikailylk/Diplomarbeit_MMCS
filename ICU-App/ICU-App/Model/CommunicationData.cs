@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ICU_App.Helper;
+namespace ICU_App.Model;
 
 /// <summary>
-/// This class deserializes/serializes the communication data as JSON
+/// This class helps to deserializes/serializes the communication data as JSON
 /// [glovedata: pitch, roll, yaw, power],
 /// [gimbaldata: pitch, roll, yaw].
 /// </summary>
@@ -44,5 +44,5 @@ public class CommunicationData
     /// <summary>
     /// Gets or sets yaw angle of gimbal.
     /// </summary>
-    public double? YawG { get;set; }
+    public double? YawG { get; set; }
 }

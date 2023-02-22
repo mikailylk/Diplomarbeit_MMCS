@@ -17,6 +17,12 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace ICU_App.View;
 
+/// <summary>
+/// The MainPage class is a view that displays the live video, a map for tracking
+/// and other UI elements.
+/// It contains a reference to an instance of MainViewModel, 
+/// which is the view model for this page.
+/// </summary>
 public partial class MainPage : ContentPage
 {
     private MainViewModel _mainViewModel;
@@ -26,30 +32,34 @@ public partial class MainPage : ContentPage
         BindingContext = vm;
         _mainViewModel = vm;
 
-        // Mapsui Maui unterstützt leider nicht einen schönen MVVM Pattern --> mapView Objekt vom xaml im ViewModel nutzen
+        // Mapsui Maui sadly doesn't support MVVM pattern
+        // therefore the mapView object of xaml is used in the ViewModel
         _mainViewModel.MapView = mapView;
     }
+
+    /// <summary>
+    /// Overrides the OnNavigatedTo method of the ContentPage class
+    /// and sets the IsActive property of the view model to true.
+    /// </summary>
+    /// <param name="args">
+    /// The arguments passed to the OnNavigatedTo method.
+    /// </param>
     protected override void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
         _mainViewModel.IsActive = true;
     }
 
+    /// <summary>
+    /// Overrides the OnNavigatedFrom method of the ContentPage class 
+    /// and sets the IsActive property of the view model to false.
+    /// </summary>
+    /// <param name="args">
+    /// The arguments passed to the OnNavigatedFrom method.
+    /// </param>
     protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
     {
         base.OnNavigatedFrom(args);
-        _mainViewModel.IsActive = false;
-    }
-
-    // need to check if neccessary
-    private void MainPage_Loaded(object sender, EventArgs e)
-    {
-        // MainView ist geladen --> relevante Daten bearbeiten
-        _mainViewModel.IsActive = true;
-    }
-
-    private void MainPage_Unloaded(object sender, EventArgs e)
-    {
         _mainViewModel.IsActive = false;
     }
 }

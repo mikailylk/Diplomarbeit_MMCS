@@ -124,6 +124,7 @@ public class Mapsui_Map
     /// <param name="latitude">The latitude points for the trace.</param>
     public static void DrawTrace(MapView mapView, List<double>longitude, List<double> latitude)
     {
+        // sample https://github.com/Mapsui/Mapsui/blob/master/Samples/Mapsui.Samples.Forms/Mapsui.Samples.Forms.Shared/PolylineSample.cs
         // clear any existing drawables
         mapView.Drawables.Clear();
 

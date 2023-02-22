@@ -20,22 +20,79 @@ using System.Collections.ObjectModel;
 
 namespace ICU_App.Model;
 
+/// <summary>
+/// This class helps to deserializes/serializes the telemetry data as JSON
+/// </summary>
 public class TelemetryData
 {
-    // Telemetriedaten
+    // telemetry data
+
+    /// <summary>
+    /// Gets or sets timestamp (Unix timestamp: elapsed since January 1, 1970, 
+    /// at 00:00:00 UTC) 
+    /// </summary>
     public double TIMESTAMP { get; set; }
+
+    /// <summary>
+    /// Gets or sets battery current consumption in Ampere.
+    /// </summary>
     public double BATT_AMP { get; set; }
+
+    /// <summary>
+    /// Gets or sets battery voltage level in Volts.
+    /// </summary>
     public double BATT_VOLT { get; set; }
+
+    /// <summary>
+    /// Gets or sets board current consumption in Ampere.
+    /// </summary>
     public double BOARD_AMP { get; set; }
+
+    /// <summary>
+    /// Gets or sets humidity in %.
+    /// </summary>
     public double HYDRO { get; set; }
+
+    /// <summary>
+    /// Gets or sets board temperature in °C.
+    /// </summary>
     public double TEMP { get; set; }
-    public double PRESSURE { get; set; }
+
+    /// <summary>
+    /// Gets or sets the altitude of board in meters.
+    /// </summary>
+    public double PRESSURE 
+    {
+        get { return PRESSURE; }
+        set
+        {
+            PRESSURE = (145366.45 * (1.0 - Math.Pow((value / 1013.25), 0.190284))) / 3.281;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets longitude of board.
+    /// </summary>
     public double LONGITUDE { get; set; }
+
+    /// <summary>
+    /// Gets or sets latitude of board.
+    /// </summary>
     public double LATITUDE { get; set; }
 
+    /// <summary>
+    /// Gets or sets longitude of smartphone.
+    /// </summary>
     public double? LONGITUDE_SMARTPHONE { get; set; }
+
+    /// <summary>
+    /// Gets or sets latitude of smartphone.
+    /// </summary>
     public double? LATITUDE_SMARTPHONE { get; set; }
 
+    /// <summary>
+    /// Returns a string of current telemetry data.
+    /// </summary>
     public override string ToString()
     {
         return $"Timestamp: {new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds((double)TIMESTAMP).ToLocalTime()}" +
@@ -46,15 +103,20 @@ public class TelemetryData
     }
 }
 
+/// <summary>
+/// This class saves the collection of telemetry data to Excel and JSON.
+/// </summary>
 public class TelemetryDataCollection
 {
+    // List of telemetry data objects
     public List<TelemetryData> telemetryDataCollection;
 
-    // save smartphone coordinates only for once (for now)
+    // Smartphone location coordinates and start time
     private double _LONGITUDE_SMARTPHONE;
     private double _LATITUDE_SMARTPHONE;
     private DateTime _start_time;
 
+    // File paths for saving telemetry data
     private const string filelocation_android_csv = "/storage/emulated/0/Documents/ICU_Tables";
     private const string filelocation_android_json = "/storage/emulated/0/Documents/ICU_Tables_JSON";
 
@@ -62,24 +124,34 @@ public class TelemetryDataCollection
     {
         telemetryDataCollection = new List<TelemetryData>();
     }
+
+    /// <summary>
+    /// Initializes a new instance of the TelemetryDataCollection class
+    /// </summary>
+    /// <param name="LONGITUDE_SMARTPHONE">The longitude of the smartphone</param>
+    /// <param name="LATITUDE_SMARTPHONE">The latitude of the smartphone</param>
     public TelemetryDataCollection(double LONGITUDE_SMARTPHONE, double LATITUDE_SMARTPHONE)
     {
-        // get location of smartphone for once and write it as every location
+        // get location of smartphone for once and use it for every smartphone location
         this._LONGITUDE_SMARTPHONE = LONGITUDE_SMARTPHONE;
         this._LATITUDE_SMARTPHONE = LATITUDE_SMARTPHONE;
 
-        // start time
+        // save start time
         _start_time = DateTime.Now;
 
         telemetryDataCollection = new List<TelemetryData>();
     }
 
-    public async Task<bool> SaveToCSVFile(string filename = "")
+    /// <summary>
+    /// Saves the telemetry data collection to a Excel file.
+    /// </summary>
+    /// <returns>Returns true if the saving was successful, false otherwise.</returns>
+    public async Task<bool> SaveToCSVFile()
     {
         // Create Directory (if not exists)
         Directory.CreateDirectory(filelocation_android_csv);
 
-        filename = Path.Combine(filelocation_android_csv, $"ICU_Table_{_start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{DateTime.Now.ToString("dd-MM-yyyy--hh-mm-ss")}.xlsx");
+        string filename = Path.Combine(filelocation_android_csv, $"ICU_Table_{_start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{DateTime.Now.ToString("dd-MM-yyyy--hh-mm-ss")}.xlsx");
 
         try
         {
@@ -240,12 +312,16 @@ public class TelemetryDataCollection
         #endregion
     }
 
-    public async Task<bool> SaveToJSON(string filename = "")
+    /// <summary>
+    /// Saves telemetry data collection to a JSON file.
+    /// </summary>
+    /// <returns>Returns true if the saving was successful, false otherwise.</returns>
+    public async Task<bool> SaveToJSON()
     {
         // Create Directory (if not exists)
         Directory.CreateDirectory(filelocation_android_json);
 
-        filename = Path.Combine(filelocation_android_json, $"ICU_Table_JSON_{_start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{DateTime.Now.ToString("dd-MM-yyyy--hh-mm-ss")}.json");
+        string filename = Path.Combine(filelocation_android_json, $"ICU_Table_JSON_{_start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{DateTime.Now.ToString("dd-MM-yyyy--hh-mm-ss")}.json");
 
         try
         {
@@ -262,7 +338,11 @@ public class TelemetryDataCollection
         return true;
     }
 
-    public async Task<ObservableCollection<string>> GetListOfJsonDataStartStop()
+    /// <summary>
+    /// Gets the list of available JSON files in the saved telemetry directory.
+    /// </summary>
+    /// <returns>Returns a list of available telemetry data.</returns>
+    public async Task<ObservableCollection<string>> GetListOfAvailableJsonData()
     {
         string fileName = "ICU_Table_JSON_";
         string fileExtension = ".json";
@@ -281,10 +361,13 @@ public class TelemetryDataCollection
         return list_filebydate;
     }
 
-    public async Task<bool> ReadFromJSON(DateTime start_time, DateTime stop_time, string filename = "")
+    /// <summary>
+    /// Reads telemetry data collection from a JSON file with the specified start and stop times.
+    /// </summary>
+    public async Task<bool> ReadFromJSON(DateTime start_time, DateTime stop_time)
     {
         //List<TelemetryData> data = JsonSerializer.DeserializeAsync();
-        filename = Path.Combine(filelocation_android_json, $"ICU_Table_JSON_{start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{stop_time.ToString("dd-MM-yyyy--hh-mm-ss")}.json");
+        string filename = Path.Combine(filelocation_android_json, $"ICU_Table_JSON_{start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{stop_time.ToString("dd-MM-yyyy--hh-mm-ss")}.json");
         
         using FileStream readstream = File.OpenRead(filename);
 
@@ -293,6 +376,9 @@ public class TelemetryDataCollection
         return true;
     }
 
+    /// <summary>
+    /// Fills telemetry data collection with randomly generated data for testing purposes.
+    /// </summary>
     public void FillWithDummyData(double longitude_smartphone, double latitude_smartphone)
     {
         Random random = new Random();
@@ -327,13 +413,39 @@ public class TelemetryDataCollection
     }
 }
 
+/// <summary>
+/// This class helps specify values and axis of a line in a line chart.
+/// </summary>
 public class TelemetryDataChartModel
 {
+    /// <summary>
+    /// The x-axis value representing the date and time the telemetry data 
+    /// was collected.
+    /// </summary>
     public DateTime x_dt { get; set; }
+
+    /// <summary>
+    /// The y-axis value representing the battery current of the telemetry data.
+    /// </summary>
     public double y_battamp { get; set; }
+
+    /// <summary>
+    /// The y-axis value representing the battery voltage of the telemetry data.
+    /// </summary>
     public double y_battvolt { get; set; }
+
+    /// <summary>
+    /// The y-axis value representing the board amperage of the telemetry data.
+    /// </summary>
     public double y_boardamp { get; set; }
 
+    /// <summary>
+    /// Parses a TelemetryData object into a TelemetryDataChartModel object. 
+    /// The TIMESTAMP property of the TelemetryData object is converted into a DateTime object 
+    /// and set as the x-axis value of the TelemetryDataChartModel object.
+    /// The BATT_AMP, BATT_VOLT, and BOARD_AMP properties of the TelemetryData object are 
+    /// set as the y-axis values of the TelemetryDataChartModel object.
+    /// </summary>
     public static TelemetryDataChartModel ParseTelemetryData(TelemetryData telemetryData)
     {
         return new TelemetryDataChartModel()
@@ -346,8 +458,18 @@ public class TelemetryDataChartModel
     }
 }
 
+/// <summary>
+/// This class helps to bind the lines of a line chart.
+/// </summary>
 public class TelemetryDataChartModelCollection : List<TelemetryDataChartModel>
 {
+    /// <summary>
+    /// Parses a TelemetryDataCollection object into a TelemetryDataChartModelCollection object. 
+    /// For each TelemetryData object in the TelemetryDataCollection object, 
+    /// a TelemetryDataChartModel object is created using the ParseTelemetryData() method 
+    /// of the TelemetryDataChartModel class.  The resulting TelemetryDataChartModel objects are added 
+    /// to the TelemetryDataChartModelCollection object.
+    /// </summary>
     public static TelemetryDataChartModelCollection ParseTelemetryDataCollection(TelemetryDataCollection telemetryDatas)
     {
         TelemetryDataChartModelCollection chartCollection = new TelemetryDataChartModelCollection();

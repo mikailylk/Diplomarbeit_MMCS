@@ -16,12 +16,21 @@ using ICU_App.Helper;
 
 namespace ICU_App.ViewModel;
 
+/// <summary>
+/// The ViewModel for the SettingsPage, which handles scanning the network, 
+/// selecting the raspberry pi and navigating to other pages.
+/// </summary>
 public partial class SettingsViewModel : ObservableRecipient
 {
-
+    /// <summary>
+    /// The collection of available hostnames on the network.
+    /// </summary>
     [ObservableProperty]
     private ObservableCollection<string> hostnames;
 
+    /// <summary>
+    /// The index of the currently selected hostname in the collection.
+    /// </summary>
     [ObservableProperty]
     private int selected_hostname_index = -1;
 
@@ -35,14 +44,20 @@ public partial class SettingsViewModel : ObservableRecipient
 
     private IPAddress _subnetmask;
 
-
+    /// <summary>
+    /// Initializes a new instance of the SettingsViewModel class.
+    /// </summary>
     public SettingsViewModel()
     {
         settingsmodel = new SettingsModel();
 
-        // find hostnames in network -> set raspberry pi as server https://stackoverflow.com/questions/4042789/how-to-get-ip-of-all-hosts-in-lan
+        // find hostnames in network and set raspberry pi as server https://stackoverflow.com/questions/4042789/how-to-get-ip-of-all-hosts-in-lan
         hostnames = new ObservableCollection<string>();
     }
+    /// <summary>
+    /// Overrides the method called when the ViewModel is activated, 
+    /// and ping all users again (if new users joined the network).
+    /// </summary>
     protected override void OnActivated()
     {
         base.OnActivated();
@@ -53,12 +68,21 @@ public partial class SettingsViewModel : ObservableRecipient
         }
     }
 
+    /// <summary>
+    /// Overrides the method called when the ViewModel is deactivated and 
+    /// clearing the collections.
+    /// </summary>
     protected override void OnDeactivated()
     {
         base.OnDeactivated();
-        hostnames.Clear();
+        Hostnames.Clear();
     }
 
+    /// <summary>
+    /// Opens a dialog box to let the user select a network interface, 
+    /// then retrieves the IP address and subnet mask and 
+    /// sends a ping to all users on the network.
+    /// </summary>
     public async void SelectNetworkInterface()
     {
         // Gets available networkinterfaces (exclude Loopback & inactive interfaces)
@@ -117,11 +141,14 @@ public partial class SettingsViewModel : ObservableRecipient
                 break;
             }
         }
-
         // Send Ping to all users in network
         PingAllUsers();
     }
 
+    /// <summary>
+    /// Sends a ping to all users on the network and 
+    /// adds the hostname and IP address of each user that responds.
+    /// </summary>
     private void PingAllUsers()
     {
         // Get network address and the last ip address (broadcast address) in network
@@ -150,15 +177,27 @@ public partial class SettingsViewModel : ObservableRecipient
         });
     }
 
+    /// <summary>
+    /// This method handles the PingCompleted event and performs the following actions:
+    /// - Retrieves the IP address of the host that was pinged from the user state.
+    /// - If the ping was successful, it attempts to retrieve the host name 
+    /// using the IP address and adds the host name and IP address to a list.
+    /// - If the ping failed, it does nothing.
+    /// </summary>
+    /// <param name="sender">The object that raised the event.</param>
+    /// <param name="e">The PingCompletedEventArgs that contains information about the ping operation.</param>
     private void P_PingCompleted(object sender, PingCompletedEventArgs e)
     {
 
         string ip = String.Join('.', e.UserState);
+
+        // check if ping was successfull
         if (e.Reply != null && e.Reply.Status == IPStatus.Success)
         {
             string name;
             try
             {
+                // retrieve the hostname (ip --> dns --> hostname)
                 IPHostEntry hostEntry = Dns.GetHostEntry(ip);
                 name = hostEntry.HostName;
                 MainThread.BeginInvokeOnMainThread(() => Hostnames.Add(name + " ; " + ip));
@@ -171,23 +210,29 @@ public partial class SettingsViewModel : ObservableRecipient
         }
         else if (e.Reply == null)
         {
-            // pingen ist fehlgeschlagen
+            // ping failed
         }
     }
 
+    /// <summary>
+    /// A command that navigates to DebugPage.
+    /// </summary>
     [RelayCommand]
     private async Task NavigateDebugPage()
     {
         await Shell.Current.GoToAsync($"{nameof(DebugPage)}");
     }
 
-
+    /// <summary>
+    /// A command that navigates to MainPage and queries the IP address
+    /// of raspberry pi/board.
+    /// </summary>
     [RelayCommand]
     private async Task NavigateMainPage()
     {
         if (selected_hostname_index == -1) { return; }
         
-        // die IP-Adresse des Raspberry Pi auf die nächste Seite geben --> Webview und Kommunikation
+        // die IP-Adresse des Raspberry Pi auf die nächste Seite geben --> WebView und Kommunikation
         settingsmodel.raspi_ip = hostnames[selected_hostname_index].Split(';')[1].Trim();
 
         await Shell.Current.GoToAsync($"{nameof(MainPage)}",
@@ -198,11 +243,14 @@ public partial class SettingsViewModel : ObservableRecipient
             );
     }
 
+    /// <summary>
+    /// A command that navigates to LogPage.
+    /// </summary>
     [RelayCommand]
     private async Task NavigateLogPage()
     {
-        // TODO: alte Flugdaten (Batteriespannung, Koordinaten, ...) in einem Chart bzw. in einer Tabelle darstellen
-        //await Shell.Current.DisplayAlert("Attention", "This feature is currently not awailable!", "OK");
+        //await Shell.Current.DisplayAlert("Attention",
+        //"This feature is currently not available!", "OK"); (it's done)
         await Shell.Current.GoToAsync($"{nameof(LogPage)}");
 
     }
