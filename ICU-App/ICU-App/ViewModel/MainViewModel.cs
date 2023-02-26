@@ -233,12 +233,19 @@ public partial class MainViewModel : ObservableRecipient
     {
         try
         {
-            while (!_udplistener.cancellationTokenSource.IsCancellationRequested) // udplistener wirft exception (cancelled), when server geschlossen werden soll
+            while (!_udplistener.cancellationTokenSource.IsCancellationRequested) // udplistener trows exception (cancelled), when server should be closed
             {
-                // Daten von Pico abwarten
+                // await data from raspberry pi pico
                 var received = await _udplistener.Receive();
-                // Daten an Raspberry Pi Zero verschicken
+                // deserialize the glove data into object and add gimbal control values from rotation sensor
                 CommunicationData communicationData = JsonSerializer.Deserialize<CommunicationData>(received.Message.ToString());
+
+                #region for testing purposes
+                //CommunicationData communicationData = new CommunicationData() 
+                //{
+                //    Pitch = 999, Roll = 555, Yaw = 888, Power = 666
+                //};
+                #endregion
 
                 // {"Pitch":999,"Roll":555,"Yaw":888,"Power":666,"PitchG":777,"RollG":766,"YawG":944}
 
@@ -261,7 +268,7 @@ public partial class MainViewModel : ObservableRecipient
         }
         finally
         {
-            // close listener
+            // close listener (if not already)
             _udplistener?.Close();
         }
     }
@@ -317,8 +324,8 @@ public partial class MainViewModel : ObservableRecipient
 
         // calculate Euler angle representation
         _angles = _calc.quaternion2Euler(q, AngleCalc.RotSeq.YZX);
-
-        // TODO: Winkel immer zwischen 0 und 360°
+         
+        // TODO: angles between 0 und 360° degrees
         string s = $"Dir\n\rPitch: {(double)(_angles.Z)} \n\rRoll {(double)(_angles.Y)} \n\rYaw {(double)_angles.X}\n\r";
     }
 
