@@ -58,15 +58,16 @@ public class TelemetryData
     /// </summary>
     public double TEMP { get; set; }
 
+    private double pressure;
     /// <summary>
     /// Gets or sets the altitude of board in meters.
     /// </summary>
-    public double PRESSURE 
+    public double PRESSURE
     {
-        get { return PRESSURE; }
+        get { return pressure; }
         set
         {
-            PRESSURE = (145366.45 * (1.0 - Math.Pow((value / 1013.25), 0.190284))) / 3.281;
+            pressure = (145366.45 * (1.0 - Math.Pow((value / 1013.25), 0.190284))) / 3.281;
         }
     }
 
@@ -349,15 +350,25 @@ public class TelemetryDataCollection
 
         ObservableCollection<string> list_filebydate = new ObservableCollection<string>();
 
-        string[] files = Directory.GetFiles(filelocation_android_json, $"{fileName}*{fileExtension}");
-
-        foreach (string file in files)
+        try
         {
-            string[] splitted_file_name = file.Split(filelocation_android_json)[1].Split('_');
+            string[] files = Directory.GetFiles(filelocation_android_json, $"{fileName}*{fileExtension}");
 
-            list_filebydate.Add($"from {splitted_file_name[3]} until {splitted_file_name[5].Split('.')[0]}");
+            foreach (string file in files)
+            {
+                string[] splitted_file_name = file.Split(filelocation_android_json)[1].Split('_');
+
+                list_filebydate.Add($"from {splitted_file_name[3]} until {splitted_file_name[5].Split('.')[0]}");
+            }
+
         }
-
+        catch (Exception)
+        {
+            // no file found
+            list_filebydate.Add("No log entry!");
+            return list_filebydate;
+        }
+       
         return list_filebydate;
     }
 
@@ -367,12 +378,18 @@ public class TelemetryDataCollection
     public async Task<bool> ReadFromJSON(DateTime start_time, DateTime stop_time)
     {
         //List<TelemetryData> data = JsonSerializer.DeserializeAsync();
-        string filename = Path.Combine(filelocation_android_json, $"ICU_Table_JSON_{start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{stop_time.ToString("dd-MM-yyyy--hh-mm-ss")}.json");
-        
-        using FileStream readstream = File.OpenRead(filename);
+        try
+        {
+            string filename = Path.Combine(filelocation_android_json, $"ICU_Table_JSON_{start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{stop_time.ToString("dd-MM-yyyy--hh-mm-ss")}.json");
 
-        telemetryDataCollection = await JsonSerializer.DeserializeAsync<List<TelemetryData>>(readstream);
+            using FileStream readstream = File.OpenRead(filename);
 
+            telemetryDataCollection = await JsonSerializer.DeserializeAsync<List<TelemetryData>>(readstream);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
         return true;
     }
 
@@ -383,7 +400,9 @@ public class TelemetryDataCollection
     {
         Random random = new Random();
 
-        DateTime dt = DateTime.UtcNow;
+        //DateTime dt = DateTime.UtcNow;
+
+        DateTime dt = DateTime.Now;
 
         for (int i = 0; i < 60; i++)
         {
@@ -392,10 +411,16 @@ public class TelemetryDataCollection
             TelemetryData telemetryData = new TelemetryData()
             {
                 TIMESTAMP = (double)dt.Subtract(new DateTime(1970, 1, 1, 0, 0, 59 - i)).TotalSeconds,
-                BATT_AMP = 14 * r, BATT_VOLT = 12 * g, BOARD_AMP = 2 * r,
-                HYDRO = 10 * r, PRESSURE = 1013 * r, TEMP = 23 * r,
-                LONGITUDE = 9.854 + 0.5*r, LATITUDE = 49.452 + 0.5*g,
-                LONGITUDE_SMARTPHONE = longitude_smartphone, LATITUDE_SMARTPHONE = latitude_smartphone
+                BATT_AMP = 14 * r,
+                BATT_VOLT = 12 * g,
+                BOARD_AMP = 2 * r,
+                HYDRO = 10 * r,
+                PRESSURE = 1013 * r,
+                TEMP = 23 * r,
+                LONGITUDE = 9.854 + 0.5 * r,
+                LATITUDE = 49.452 + 0.5 * g,
+                LONGITUDE_SMARTPHONE = longitude_smartphone,
+                LATITUDE_SMARTPHONE = latitude_smartphone
             };
             telemetryDataCollection.Add(telemetryData);
         }

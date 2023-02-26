@@ -29,19 +29,19 @@
             <VerticalStackLayout Grid.Column="2">
                 <RadioButton Content="Show diagram" IsChecked="{Binding Ischecked_diagram}">
                     <RadioButton.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding ExecuteRBChangedCommandCommand}" 
+                        <TapGestureRecognizer Command="{Binding ExecuteRBChangedCommand}" 
                                               CommandParameter="Show diagram" />
                     </RadioButton.GestureRecognizers>
                 </RadioButton>
                 <RadioButton Content="Show trace" IsChecked="{Binding Ischecked_trace}">
                     <RadioButton.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding ExecuteRBChangedCommandCommand}" 
+                        <TapGestureRecognizer Command="{Binding ExecuteRBChangedCommand}" 
                                               CommandParameter="Show trace" />
                     </RadioButton.GestureRecognizers>
                 </RadioButton>
             </VerticalStackLayout>
         </Grid>
-        <chart:SfCartesianChart Grid.Row="1" BackgroundColor="Beige" IsVisible="{Binding IsChartVisible}">
+        <chart:SfCartesianChart Grid.Row="1" BackgroundColor="Beige" IsVisible="{Binding IsChartVisible}" ZIndex="5">
 
             <chart:SfCartesianChart.XAxes>
                 <chart:DateTimeAxis 
@@ -77,9 +77,9 @@
                                   ItemsSource="{Binding Telemetry_data_chart_collection}"
                                   ShowMarkers="True"
                                   YAxisName="primaryY" Label="Board Current"/>
-                
+
                 <chart:LineSeries XBindingPath="x_dt" YBindingPath="y_battvolt"
-                                  ItemsSource="{Binding Telemetry_data_chart}"
+                                  ItemsSource="{Binding Telemetry_data_chart_collection}"
                                   ShowMarkers="True"
                                   YAxisName="secondaryY" Label="Battery Voltage"/>
             </chart:SfCartesianChart.Series>

@@ -5,8 +5,6 @@
              xmlns:viewmodel="clr-namespace:ICU_App.ViewModel"
              xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
              x:DataType="viewmodel:MainViewModel"
-             Loaded="MainPage_Loaded"
-             Unloaded="MainPage_Unloaded"
              Shell.NavBarIsVisible="False">
     <Grid>
         <Grid.RowDefinitions>

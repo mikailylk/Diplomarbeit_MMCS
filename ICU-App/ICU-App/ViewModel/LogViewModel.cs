@@ -58,7 +58,7 @@ public partial class LogViewModel : ObservableRecipient
     /// A boolean indicating if the map is visible.
     /// </summary>
     [ObservableProperty]
-    private bool isMapVisible = false;
+    private bool isMapVisible = true;
 
     /// <summary>
     /// The MapView used in the LogPage.
@@ -85,7 +85,7 @@ public partial class LogViewModel : ObservableRecipient
     /// </summary>
     /// <param name="selection_type">The type of selection.</param>
     [RelayCommand]
-    private void ExecuteRBChangedCommand(string selection_type)
+    private void ExecuteRBChanged(string selection_type)
     {
         if(selection_type == "Show diagram")
         {
@@ -110,7 +110,7 @@ public partial class LogViewModel : ObservableRecipient
     partial void OnSelected_av_data_indexChanged(int value)
     {
 
-        if(Selected_av_data_index >= 0)
+        if(Selected_av_data_index >= 0 && !Available_data[0].ToString().StartsWith("No log"))
         {
             Task<bool> task = Task.Run(async () =>
             {
@@ -122,6 +122,7 @@ public partial class LogViewModel : ObservableRecipient
             });
             bool loaded = task.Result;
 
+            // check if any data available
             if (loaded)
             {
                 Telemetry_data_chart_collection = TelemetryDataChartModelCollection.ParseTelemetryDataCollection(_telemetryDataCollection);
@@ -155,19 +156,15 @@ public partial class LogViewModel : ObservableRecipient
     protected override async void OnActivated()
     {
         base.OnActivated();
+
         _telemetryDataCollection.telemetryDataCollection.Clear();
         Available_data = await _telemetryDataCollection.GetListOfAvailableJsonData();
 
-        if (Available_data != null)
+        if (!Available_data[0].ToString().StartsWith("No log"))
         {
             Mapsui_Map.SetupMapMaterial(MapView);
-            Selected_av_data_index = 0;
         }
-        else
-        {
-            Available_data.Clear();
-            Available_data.Add("No log entry!");
-        }
+        Selected_av_data_index = 0;
     }
 
     /// <summary>
