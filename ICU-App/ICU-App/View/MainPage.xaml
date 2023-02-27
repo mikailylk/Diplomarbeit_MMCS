@@ -35,7 +35,7 @@
                 Grid.Column="0" Grid.Row="2" Grid.RowSpan="2" Grid.ColumnSpan="2"
                 ZIndex="3" Margin="5"/>
 
-        <Label Text="{Binding Telemetry}" Grid.Row="2" Grid.Column="2" Opacity="1" ZIndex="3"/>
+        <Label Text="{Binding Telemetry}" Grid.Row="2" Grid.Column="2" Opacity="1" ZIndex="4"/>
         <!-- nicht MVVM freundlich; aus Code behind editieren --> 
         
         

@@ -83,7 +83,7 @@ public partial class MainViewModel : ObservableRecipient
     /// A property that represents the telemetry data received from Raspberry Pi Zero.
     /// </summary>
     [ObservableProperty]
-    private string telemetry;
+    private string telemetry = "";
 
     /// <summary>
     /// A TelemetryDataCollection that is used to collect telemetry data.
@@ -236,23 +236,26 @@ public partial class MainViewModel : ObservableRecipient
             while (!_udplistener.cancellationTokenSource.IsCancellationRequested) // udplistener trows exception (cancelled), when server should be closed
             {
                 // await data from raspberry pi pico
-                var received = await _udplistener.Receive();
+                //var received = await _udplistener.Receive();
                 // deserialize the glove data into object and add gimbal control values from rotation sensor
-                CommunicationData communicationData = JsonSerializer.Deserialize<CommunicationData>(received.Message.ToString());
+                //CommunicationData communicationData = JsonSerializer.Deserialize<CommunicationData>(received.Message.ToString());
 
                 #region for testing purposes
-                //CommunicationData communicationData = new CommunicationData() 
-                //{
-                //    Pitch = 999, Roll = 555, Yaw = 888, Power = 666
-                //};
+                CommunicationData communicationData = new CommunicationData()
+                {
+                    Pitch = 999,
+                    Roll = 555,
+                    Yaw = 888,
+                    Power = 666
+                };
                 #endregion
 
                 // {"Pitch":999,"Roll":555,"Yaw":888,"Power":666,"PitchG":777,"RollG":766,"YawG":944}
 
                 // get orientation sensor data 
-                communicationData.PitchG = (int)_angles.Z;
-                communicationData.YawG = (int)_angles.X;
-                communicationData.RollG = (int)_angles.Y;
+                communicationData.PitchG = Math.Abs((int)_angles.Z);
+                communicationData.YawG = Math.Abs((int)_angles.X);
+                communicationData.RollG = Math.Abs((int)_angles.Y);
 
                 string message = JsonSerializer.Serialize(communicationData);
 
@@ -288,22 +291,27 @@ public partial class MainViewModel : ObservableRecipient
 
                 // deserialize the telemetry data
                 TelemetryData telemetryData = JsonSerializer.Deserialize<TelemetryData>(message);
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    Telemetry = telemetryData.ToString();
-                });
-             
-                // for now, just get long & lat of smartphone once and write it as location
-                telemetryData.LONGITUDE_SMARTPHONE = _longitude_phone;
-                telemetryData.LATITUDE_SMARTPHONE = _latitude_phone;
 
-                // add telemetry data to collection
-                _telemetryDataCollection.telemetryDataCollection.Add(telemetryData);
+                if (_telemetryDataCollection != null)
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        Telemetry = telemetryData.ToString();
+                    });
+
+                    // for now, just get long & lat of smartphone once and write it as location
+                    telemetryData.LONGITUDE_SMARTPHONE = _longitude_phone;
+                    telemetryData.LATITUDE_SMARTPHONE = _latitude_phone;
+
+                    // add telemetry data to collection
+                    _telemetryDataCollection.telemetryDataCollection.Add(telemetryData);
+                }                
             }
         }
         catch (Exception ex)
         {
             // cancellation was submitted
+            string s = ex.Message;
         }
     }
 
