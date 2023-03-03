@@ -63,7 +63,7 @@ namespace ICU_App.Calc
         /// <param name="r31"></param>
         /// <param name="r32"></param>
         /// <returns>Vector3 angles</returns>
-        Vector3 twoaxisrot(float r11, float r12, float r21, float r31, float r32)
+        private Vector3 twoaxisrot(float r11, float r12, float r21, float r31, float r32)
         {
             Vector3 ret = new Vector3
             {
@@ -83,7 +83,7 @@ namespace ICU_App.Calc
         /// <param name="r31"></param>
         /// <param name="r32"></param>
         /// <returns>Vector3 angles</returns>
-        Vector3 threeaxisrot(float r11, float r12, float r21, float r31, float r32)
+        private Vector3 threeaxisrot(float r11, float r12, float r21, float r31, float r32)
         {
             Vector3 ret = new Vector3
             {
@@ -205,6 +205,32 @@ namespace ICU_App.Calc
 
             }
 
+        }
+
+        /// <summary>
+        /// Converts euler angle range (in degrees).
+        /// </summary>
+        /// <param name="eulerangles"></param>
+        /// <returns>The Euler angles (Pitch and Yaw) between 0 and 359 degrees</returns>
+        public Vector3 Euler360DegreeRange(Vector3 eulerangles)
+        {
+            if (eulerangles.X < 0)
+            {
+                eulerangles.X += 360;
+            }
+
+            if (eulerangles.Z < 0)
+            {
+                eulerangles.Z += 360;
+            }
+
+            // TODO: Check if this is correct at gimbal?
+            if (eulerangles.Y < 0)
+            {
+                eulerangles.Y += 180;
+            }
+
+            return eulerangles;
         }
     }
 }

@@ -14,5 +14,6 @@ public class MainActivity : MauiAppCompatActivity
         Platform.Init(this, savedInstanceState);
 
         this.Window.AddFlags(WindowManagerFlags.Fullscreen);
+        this.RequestedOrientation = ScreenOrientation.ReverseLandscape;
     }
 }

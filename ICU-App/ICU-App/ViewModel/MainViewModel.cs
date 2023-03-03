@@ -11,6 +11,7 @@ using ICU_App.Calc;
 using System.Numerics;
 using System.Diagnostics;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
 
 namespace ICU_App.ViewModel;
 
@@ -86,6 +87,12 @@ public partial class MainViewModel : ObservableRecipient
     private string telemetry = "";
 
     /// <summary>
+    /// A property that checks, if telemetry data label should be showed
+    /// </summary>
+    [ObservableProperty]
+    private bool isTelemetryChecked = false;
+
+    /// <summary>
     /// A TelemetryDataCollection that is used to collect telemetry data.
     /// </summary>
     private TelemetryDataCollection _telemetryDataCollection;
@@ -144,6 +151,8 @@ public partial class MainViewModel : ObservableRecipient
     protected override void OnActivated()
     {
         base.OnActivated();
+        // keep device display on
+        DeviceDisplay.KeepScreenOn = true;
         Camurl = $"http://{settingsmodel.raspi_ip}:8082/index.html";
 
         // UDP server: receive data from raspberry pi pico, merge them with gimbal data
@@ -178,13 +187,18 @@ public partial class MainViewModel : ObservableRecipient
     protected override async void OnDeactivated()
     {
         base.OnDeactivated();
+        DeviceDisplay.KeepScreenOn = false;
         // TODO: save smartphone coordinates into a list (not static as now)
         CancelRequest();
         Cancel_Server();
         Cancel_Client();
 
-        _orientationSensor.Stop();
-        OrientationSensor.ReadingChanged -= OrientationSensor_ReadingChanged;
+        // for know, only Android smartphones are supported
+        if(_orientationSensor.IsSupported )
+        {
+            _orientationSensor.Stop();
+            OrientationSensor.ReadingChanged -= OrientationSensor_ReadingChanged;
+        }
 
         // save the telemetry data to Excel and JSON
         _telemetryDataCollection.FillWithDummyData(_longitude_phone, _latitude_phone);
@@ -205,7 +219,6 @@ public partial class MainViewModel : ObservableRecipient
 
             await Shell.Current.DisplayAlert("Information", message, "OK");
         }
-
     }
 
     /// <summary>
@@ -262,7 +275,8 @@ public partial class MainViewModel : ObservableRecipient
                 _udpclient.Send(message);
 
                 // 1ms timeout
-                Thread.Sleep(1);
+                // Thread.Sleep(1);
+                Thread.Sleep(1000);
             }
         }
         catch (Exception ex)
@@ -332,10 +346,12 @@ public partial class MainViewModel : ObservableRecipient
 
         // calculate Euler angle representation
         _angles = _calc.quaternion2Euler(q, AngleCalc.RotSeq.YZX);
-         
+        _angles = _calc.Euler360DegreeRange(_angles);   // only positive angles (Yaw and Pitch) for gimbal
         // TODO: angles between 0 und 360° degrees
         string s = $"Dir\n\rPitch: {(double)(_angles.Z)} \n\rRoll {(double)(_angles.Y)} \n\rYaw {(double)_angles.X}\n\r";
-    }
+
+        Telemetry = s;   // testing purposes
+    } 
 
     /// <summary>
     /// A command that starts or stops the reading process
@@ -356,6 +372,15 @@ public partial class MainViewModel : ObservableRecipient
                 Set_Position();
             }
         }
+    }
+    /// <summary>
+    /// A command that enables/disables the display of telemetry data
+    /// </summary>
+    [RelayCommand]
+    private void CBox_Checked() 
+    {
+        bool chbox_checked_state = IsTelemetryChecked;
+        IsTelemetryChecked = !chbox_checked_state;
     }
 
     /// <summary>
