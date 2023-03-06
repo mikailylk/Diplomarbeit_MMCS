@@ -224,10 +224,14 @@ namespace ICU_App.Calc
                 eulerangles.Z += 360;
             }
 
-            // TODO: Check if this is correct at gimbal?
-            if (eulerangles.Y < 0)
+            // TODO: Check if this is correct with gimbal?
+            if (eulerangles.Y > 0)
             {
-                eulerangles.Y += 180;
+                eulerangles.Y = Math.Abs(eulerangles.Y - 90);
+            }
+            else if (eulerangles.Y < 0)
+            {
+                eulerangles.Y = 90 + Math.Abs(eulerangles.Y);
             }
 
             return eulerangles;

@@ -201,7 +201,7 @@ public partial class MainViewModel : ObservableRecipient
         }
 
         // save the telemetry data to Excel and JSON
-        _telemetryDataCollection.FillWithDummyData(_longitude_phone, _latitude_phone);
+        // _telemetryDataCollection.FillWithDummyData(_longitude_phone, _latitude_phone);
         bool saving_json_stat = await _telemetryDataCollection.SaveToJSON();
         bool savingstat = await _telemetryDataCollection.SaveToCSVFile();
 
@@ -249,34 +249,36 @@ public partial class MainViewModel : ObservableRecipient
             while (!_udplistener.cancellationTokenSource.IsCancellationRequested) // udplistener trows exception (cancelled), when server should be closed
             {
                 // await data from raspberry pi pico
-                //var received = await _udplistener.Receive();
+                var received = await _udplistener.Receive();
                 // deserialize the glove data into object and add gimbal control values from rotation sensor
-                //CommunicationData communicationData = JsonSerializer.Deserialize<CommunicationData>(received.Message.ToString());
+                CommunicationData communicationData = JsonSerializer.Deserialize<CommunicationData>(received.Message.ToString());
 
                 #region for testing purposes
-                CommunicationData communicationData = new CommunicationData()
-                {
-                    Pitch = 999,
-                    Roll = 555,
-                    Yaw = 888,
-                    Power = 666
-                };
+                //CommunicationData communicationData = new CommunicationData()
+                //{
+                //    Pitch = 999,
+                //    Roll = 555,
+                //    Yaw = 888,
+                //    Power = 666
+                //};
                 #endregion
 
                 // {"Pitch":999,"Roll":555,"Yaw":888,"Power":666,"PitchG":777,"RollG":766,"YawG":944}
 
                 // get orientation sensor data 
-                communicationData.PitchG = Math.Abs((int)_angles.Z);
-                communicationData.YawG = Math.Abs((int)_angles.X);
-                communicationData.RollG = Math.Abs((int)_angles.Y);
+                if (_angles.Z < 360 && _angles.X < 360)
+                {
+                    communicationData.PitchG = Math.Abs((int)_angles.Z);
+                    communicationData.YawG = Math.Abs((int)_angles.X);
+                    communicationData.RollG = Math.Abs((int)_angles.Y);
 
-                string message = JsonSerializer.Serialize(communicationData);
+                    string message = JsonSerializer.Serialize(communicationData);
 
-                _udpclient.Send(message);
-
-                // 1ms timeout
-                // Thread.Sleep(1);
-                Thread.Sleep(1000);
+                    _udpclient.Send(message);
+                }
+               // 1ms timeout
+                Thread.Sleep(1);
+                // Thread.Sleep(1000);
             }
         }
         catch (Exception ex)
@@ -310,7 +312,8 @@ public partial class MainViewModel : ObservableRecipient
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        Telemetry = telemetryData.ToString();
+                        // Telemetry = telemetryData.ToString();
+                        // TODO: MapView draw new point of RC device --> auto scale
                     });
 
                     // for now, just get long & lat of smartphone once and write it as location
@@ -388,14 +391,12 @@ public partial class MainViewModel : ObservableRecipient
     /// </summary>
     private void Set_Position()
     {
-        if (_orientationSensor == null)
-        {
-            return;
-        }
-        _originQ.X = 0;
-        _originQ.Y = 0;
-        _originQ.Z = 0;
-        _originQ.W = 1;
+        _originQ = Quaternion.Identity;
+        //if (_orientationSensor == null)
+        //{
+        //    return;
+        //}
+        // _originQ = Quaternion.Identity;
     }
 
     /// <summary>
