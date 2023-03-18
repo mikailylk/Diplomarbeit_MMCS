@@ -105,7 +105,7 @@ public partial class MainViewModel : ObservableRecipient
     /// A SensorSpeed that represents the speed at which the orientation 
     /// sensor data should be read.
     /// </summary>
-    private SensorSpeed speed = SensorSpeed.UI;
+    private SensorSpeed _speed = SensorSpeed.UI;
 
     /// <summary>
     /// An AngleCalc that is used to calculate the Euler angles representation.
@@ -117,7 +117,21 @@ public partial class MainViewModel : ObservableRecipient
     /// </summary>
     private Vector3 _angles;
 
+    /// <summary>
+    /// A Quaternion that indicates a compensation for offsets.
+    /// </summary>
     private Quaternion _originQ = new Quaternion(0, 0, 0, 1);
+
+    /// <summary>
+    /// A float value that represents the offset at yaw-axis.
+    /// This value is used to compensate the offset.
+    /// </summary>
+    private float ?_offset_yaw = null;
+    /// <summary>
+    /// A float value that represents the offset at pitch-axis.
+    /// This value is used to compensate the offset.
+    /// </summary>
+    private float ?_offset_pitch = null;
 
     public MainViewModel()
     {}
@@ -202,6 +216,10 @@ public partial class MainViewModel : ObservableRecipient
 
         // save the telemetry data to Excel and JSON
         // _telemetryDataCollection.FillWithDummyData(_longitude_phone, _latitude_phone);
+        if(_telemetryDataCollection.telemetryDataCollection.Count == 0)
+        {
+            _telemetryDataCollection.FillWithDummyData(_longitude_phone, _latitude_phone);
+        }
         bool saving_json_stat = await _telemetryDataCollection.SaveToJSON();
         bool savingstat = await _telemetryDataCollection.SaveToCSVFile();
 
@@ -313,6 +331,7 @@ public partial class MainViewModel : ObservableRecipient
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
                         // Telemetry = telemetryData.ToString();
+
                         // TODO: MapView draw new point of RC device --> auto scale
                     });
 
@@ -340,21 +359,40 @@ public partial class MainViewModel : ObservableRecipient
     {
         // https://stackoverflow.com/questions/54540095/xamarin-orientation-sensor-quaternion
 
-        if (_originQ == Quaternion.Identity)
-        {
-            _originQ = Quaternion.Inverse(e.Reading.Orientation);
-        }
-
-        var q = Quaternion.Multiply(_originQ, e.Reading.Orientation);
+        //var q = Quaternion.Multiply(_originQ, e.Reading.Orientation);
+        var q = e.Reading.Orientation;
 
         // calculate Euler angle representation
-        _angles = _calc.quaternion2Euler(q, AngleCalc.RotSeq.YZX);
-        _angles = _calc.Euler360DegreeRange(_angles);   // only positive angles (Yaw and Pitch) for gimbal
-        // TODO: angles between 0 und 360° degrees
-        string s = $"Dir\n\rPitch: {(double)(_angles.Z)} \n\rRoll {(double)(_angles.Y)} \n\rYaw {(double)_angles.X}\n\r";
+        // _angles = _calc.quaternion2Euler(q, AngleCalc.RotSeq.YZX);
+        _angles = _calc.quaternion2Euler(q, AngleCalc.RotSeq.ZXY);
 
-        Telemetry = s;   // testing purposes
-    } 
+        _angles = _calc.Euler360DegreeRange(ref _angles, false);   // only positive angles (Yaw and Pitch) for gimbal
+
+        if (_originQ == Quaternion.Identity)
+        {
+            _originQ = q;
+            _offset_yaw = _angles.Z;
+            _offset_pitch = _angles.X;
+        }
+
+        // do offset compensation
+        if (_offset_yaw == null)
+        {
+            _offset_yaw = _angles.Z;
+            _offset_pitch = _angles.X;
+        }
+        else
+        {
+            // offset compensation
+            _angles.X = _angles.X - (float)_offset_pitch;
+            _angles.Z = _angles.Z - (float)_offset_yaw;
+
+            _angles = _calc.Euler360DegreeRange(ref _angles, true);
+
+            string s = $"Dir\n\rPitch: {Math.Round(_angles.X, 2)} \n\rRoll {Math.Round(_angles.Y, 2)} \n\rYaw {Math.Round(_angles.Z, 2)}\n\r";
+            Telemetry = s;
+        }
+    }
 
     /// <summary>
     /// A command that starts or stops the reading process
@@ -371,7 +409,7 @@ public partial class MainViewModel : ObservableRecipient
             }
             else if (!_orientationSensor.IsMonitoring)
             {
-                _orientationSensor.Start(speed);
+                _orientationSensor.Start(_speed);
                 Set_Position();
             }
         }
@@ -391,12 +429,11 @@ public partial class MainViewModel : ObservableRecipient
     /// </summary>
     private void Set_Position()
     {
+        if (_orientationSensor == null)
+        {
+            return;
+        }
         _originQ = Quaternion.Identity;
-        //if (_orientationSensor == null)
-        //{
-        //    return;
-        //}
-        // _originQ = Quaternion.Identity;
     }
 
     /// <summary>

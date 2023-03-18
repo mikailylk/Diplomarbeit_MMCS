@@ -12,41 +12,6 @@ namespace ICU_App.Calc
         public AngleCalc(){}
 
         /// <summary>
-        /// Returns Vector3 X,Y,Z representing different angles in Euler
-        /// </summary>
-        /// <param name="q">Quaternion</param>
-        /// <returns>Vector3 Euler angles</returns>
-        public Vector3 ToEulerAngles(Quaternion q)
-        {
-            // Z-Y-X convention (Tayt-Brian)
-            Vector3 angles = new();
-
-            // roll / x
-            double sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
-            double cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
-            angles.X = (float)Math.Atan2(sinr_cosp, cosr_cosp);
-
-            // pitch / y
-            double sinp = 2 * (q.W * q.Y - q.Z * q.X);
-            if (Math.Abs(sinp) >= 1)
-            {
-                angles.Y = (float)Math.CopySign(Math.PI / 2, sinp);
-            }
-            else
-            {
-                angles.Y = (float)Math.Asin(sinp);
-            }
-            //angles.Y = (float)Math.Asin(sinp);
-
-            // yaw / z
-            double siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
-            double cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
-            angles.Z = (float)Math.Atan2(siny_cosp, cosy_cosp);
-
-            return angles;
-        }
-
-        /// <summary>
         /// Enumeration of possible rotation sequence types
         /// </summary>
         public enum RotSeq
@@ -212,7 +177,7 @@ namespace ICU_App.Calc
         /// </summary>
         /// <param name="eulerangles"></param>
         /// <returns>The Euler angles (Pitch and Yaw) between 0 and 359 degrees</returns>
-        public Vector3 Euler360DegreeRange(Vector3 eulerangles)
+        public Vector3 Euler360DegreeRange(ref Vector3 eulerangles, bool check_roll)
         {
             if (eulerangles.X < 0)
             {
@@ -224,16 +189,18 @@ namespace ICU_App.Calc
                 eulerangles.Z += 360;
             }
 
-            // TODO: Check if this is correct with gimbal?
-            if (eulerangles.Y > 0)
+            if (check_roll)
             {
-                eulerangles.Y = Math.Abs(eulerangles.Y - 90);
+                // TODO: Check if this is correct with gimbal?
+                if (eulerangles.Y > 0)
+                {
+                    eulerangles.Y = Math.Abs(eulerangles.Y - 90);
+                }
+                else if (eulerangles.Y < 0)
+                {
+                    eulerangles.Y = 90 + Math.Abs(eulerangles.Y);
+                }
             }
-            else if (eulerangles.Y < 0)
-            {
-                eulerangles.Y = 90 + Math.Abs(eulerangles.Y);
-            }
-
             return eulerangles;
         }
     }

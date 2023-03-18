@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ICU_App.ViewModel.SettingsViewModel">
+    <Position X="3.5" Y="1" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAhICAAAAAJQAAARAAAAAAAAQAAAAAAAAIAAAAgQIAE=</HashCode>
+      <FileName>ViewModel\SettingsViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Helper.IPv4Helper">
+    <Position X="6.75" Y="1" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAAAAAAAQAAAAAAAAAAAAAAAAAgAAAAA=</HashCode>
+      <FileName>Helper\IPv4Helper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.ViewModel.MainViewModel">
+    <Position X="3.5" Y="6.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>NSBAAgQAIAgSCEwAIwAIAAAAQEAAgACAJI2AAAAAACg=</HashCode>
+      <FileName>ViewModel\MainViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Model.SettingsModel">
+    <Position X="6.75" Y="3" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\SettingsModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Model.TelemetryData">
+    <Position X="6.75" Y="6.25" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>BAACAAAoAAAAAAAEAAAAIICAAEACAAACAEAAAAACAAA=</HashCode>
+      <FileName>Model\TelemetryData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Model.TelemetryDataCollection">
+    <Position X="10" Y="6.25" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>CAAAIEAABABgAAAAEAAAAAAAAAAEEEAAAAAAABAAAAA=</HashCode>
+      <FileName>Model\TelemetryData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Model.Mapsui_Map">
+    <Position X="10" Y="10.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAECAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAgAg=</HashCode>
+      <FileName>Model\Mapsui_Map.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Model.CommunicationData">
+    <Position X="6.75" Y="10.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAACAAAACAAAAAAAABAABAABAAAAA=</HashCode>
+      <FileName>Model\CommunicationData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Helper.UDPBase">
+    <Position X="17" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAACAAAAAAQAAAAAAAAAAQ=</HashCode>
+      <FileName>Helper\Socket_Server_Client.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Helper.UDPClient">
+    <Position X="16" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAAAAACAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Helper\Socket_Server_Client.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Helper.UDPListener">
+    <Position X="18" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>Helper\Socket_Server_Client.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Calc.AngleCalc">
+    <Position X="13.25" Y="6.25" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="ICU_App.Calc.AngleCalc.RotSeq">
+        <TypeIdentifier>
+          <NewMemberFileName>Calc\AngleCalc.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAAAAAIAAEAAAAAAAIAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Calc\AngleCalc.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.ViewModel.LogViewModel">
+    <Position X="3.5" Y="15.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAQgAAAAQAAEAAAAAAAABAAAAAAAIAIQAAQBAAAA=</HashCode>
+      <FileName>ViewModel\LogViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Model.TelemetryDataChartModel">
+    <Position X="6.75" Y="15.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAABAAACAAAAAAAAAAAAAAAgAAAAgAAAAAAAA=</HashCode>
+      <FileName>Model\TelemetryData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ICU_App.Model.TelemetryDataChartModelCollection">
+    <Position X="9.25" Y="15.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Model\TelemetryData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="ICU_App.Helper.Received">
+    <Position X="19" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAIAAA=</HashCode>
+      <FileName>Helper\Socket_Server_Client.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

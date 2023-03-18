@@ -34,7 +34,7 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty]
     private int selected_hostname_index = -1;
 
-    private SettingsModel settingsmodel;
+    private SettingsModel _settingsmodel;
 
     private List<NetworkInterface> _networkInterfaces;
 
@@ -49,7 +49,7 @@ public partial class SettingsViewModel : ObservableRecipient
     /// </summary>
     public SettingsViewModel()
     {
-        settingsmodel = new SettingsModel();
+        _settingsmodel = new SettingsModel();
 
         // find hostnames in network and set raspberry pi as server https://stackoverflow.com/questions/4042789/how-to-get-ip-of-all-hosts-in-lan
         hostnames = new ObservableCollection<string>();
@@ -232,13 +232,13 @@ public partial class SettingsViewModel : ObservableRecipient
     {
         if (selected_hostname_index == -1) { return; }
         
-        // die IP-Adresse des Raspberry Pi auf die nächste Seite geben --> WebView und Kommunikation
-        settingsmodel.raspi_ip = hostnames[selected_hostname_index].Split(';')[1].Trim();
+        // query the ip address of Raspberry Pi
+        _settingsmodel.raspi_ip = hostnames[selected_hostname_index].Split(';')[1].Trim();
 
         await Shell.Current.GoToAsync($"{nameof(MainPage)}",
             new Dictionary<string, object>
             {
-                ["Settingsmodel"] = settingsmodel
+                ["Settingsmodel"] = _settingsmodel
             }
             );
     }

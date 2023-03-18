@@ -5,12 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-
-// openxml
-//using DocumentFormat.OpenXml;
-//using DocumentFormat.OpenXml.Packaging;
-//using DocumentFormat.OpenXml.Spreadsheet;
-
 using Syncfusion.XlsIO;
 using NetTopologySuite.Mathematics;
 using System.Text.Json;
@@ -118,8 +112,8 @@ public class TelemetryDataCollection
     private DateTime _start_time;
 
     // File paths for saving telemetry data
-    private const string filelocation_android_csv = "/storage/emulated/0/Documents/ICU_Tables";
-    private const string filelocation_android_json = "/storage/emulated/0/Documents/ICU_Tables_JSON";
+    private const string _filelocation_android_csv = "/storage/emulated/0/Documents/ICU_Tables";
+    private const string _filelocation_android_json = "/storage/emulated/0/Documents/ICU_Tables_JSON";
 
     public TelemetryDataCollection() 
     {
@@ -150,9 +144,9 @@ public class TelemetryDataCollection
     public async Task<bool> SaveToCSVFile()
     {
         // Create Directory (if not exists)
-        Directory.CreateDirectory(filelocation_android_csv);
+        Directory.CreateDirectory(_filelocation_android_csv);
 
-        string filename = Path.Combine(filelocation_android_csv, $"ICU_Table_{_start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{DateTime.Now.ToString("dd-MM-yyyy--hh-mm-ss")}.xlsx");
+        string filename = Path.Combine(_filelocation_android_csv, $"ICU_Table_{_start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{DateTime.Now.ToString("dd-MM-yyyy--hh-mm-ss")}.xlsx");
 
         try
         {
@@ -233,7 +227,7 @@ public class TelemetryDataCollection
 
                 IChartSerie batt_volt_ser = chart_volt_amp.Series.Add("Battery_Voltage_Consumption");
                 batt_volt_ser.Values = worksheet.Range[$"C2:C{telemetryDataCollection.Count - 1}"];
-                batt_volt_ser.UsePrimaryAxis = false; // zweite Achse verwenden
+                batt_volt_ser.UsePrimaryAxis = false; // use second axis
                 batt_volt_ser.CategoryLabels = worksheet.Range[$"A2:A{telemetryDataCollection.Count - 1}"];
 
                 chart_volt_amp.PrimaryCategoryAxis.Title = "Time";
@@ -266,51 +260,6 @@ public class TelemetryDataCollection
 
         // saving was ok
         return true;
-
-        #region openxml
-        // Create a new Excel file. openxml
-        //using (SpreadsheetDocument spreadsheet = SpreadsheetDocument.Create(filename, SpreadsheetDocumentType.Workbook))
-        //{
-        //    // Add a WorkbookPart to the document.
-        //    WorkbookPart workbookPart = spreadsheet.AddWorkbookPart();
-        //    workbookPart.Workbook = new Workbook();
-
-        //    // Add a WorksheetPart to the WorkbookPart.
-        //    WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
-        //    worksheetPart.Worksheet = new Worksheet(new SheetData());
-
-        //    // Add Sheets to the Workbook.
-        //    Sheets sheets = spreadsheet.WorkbookPart.Workbook.AppendChild<Sheets>(new Sheets());
-
-        //    // Append a new worksheet and associate it with the workbook.
-        //    Sheet sheet = new Sheet()
-        //    {
-        //        Id = spreadsheet.WorkbookPart.GetIdOfPart(worksheetPart),
-        //        SheetId = 1,
-        //        Name = "Sheet1"
-        //    };
-        //    sheets.Append(sheet);
-
-        //    // Get the SheetData from the Worksheet.
-        //    SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
-
-        //    // Add a new row to the sheet data.
-        //    Row row = new Row();
-        //    sheetData.Append(row);
-
-        //    // Add cells to the row.
-        //    DocumentFormat.OpenXml.Spreadsheet.Cell cell1 = new DocumentFormat.OpenXml.Spreadsheet.Cell() { CellValue = new CellValue("Hello"), DataType = CellValues.String };
-        //    row.Append(cell1);
-        //    DocumentFormat.OpenXml.Spreadsheet.Cell cell2 = new DocumentFormat.OpenXml.Spreadsheet.Cell() { CellValue = new CellValue("World"), DataType = CellValues.String };
-        //    row.Append(cell2);
-
-        //    // Save the changes to the worksheet.
-        //    worksheetPart.Worksheet.Save();
-
-        //    // Close the document.
-        //    spreadsheet.Close();
-        //}
-        #endregion
     }
 
     /// <summary>
@@ -320,9 +269,9 @@ public class TelemetryDataCollection
     public async Task<bool> SaveToJSON()
     {
         // Create Directory (if not exists)
-        Directory.CreateDirectory(filelocation_android_json);
+        Directory.CreateDirectory(_filelocation_android_json);
 
-        string filename = Path.Combine(filelocation_android_json, $"ICU_Table_JSON_{_start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{DateTime.Now.ToString("dd-MM-yyyy--hh-mm-ss")}.json");
+        string filename = Path.Combine(_filelocation_android_json, $"ICU_Table_JSON_{_start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{DateTime.Now.ToString("dd-MM-yyyy--hh-mm-ss")}.json");
 
         try
         {
@@ -352,11 +301,11 @@ public class TelemetryDataCollection
 
         try
         {
-            string[] files = Directory.GetFiles(filelocation_android_json, $"{fileName}*{fileExtension}");
+            string[] files = Directory.GetFiles(_filelocation_android_json, $"{fileName}*{fileExtension}");
 
             foreach (string file in files)
             {
-                string[] splitted_file_name = file.Split(filelocation_android_json)[1].Split('_');
+                string[] splitted_file_name = file.Split(_filelocation_android_json)[1].Split('_');
 
                 list_filebydate.Add($"from {splitted_file_name[3]} until {splitted_file_name[5].Split('.')[0]}");
             }
@@ -380,7 +329,7 @@ public class TelemetryDataCollection
         //List<TelemetryData> data = JsonSerializer.DeserializeAsync();
         try
         {
-            string filename = Path.Combine(filelocation_android_json, $"ICU_Table_JSON_{start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{stop_time.ToString("dd-MM-yyyy--hh-mm-ss")}.json");
+            string filename = Path.Combine(_filelocation_android_json, $"ICU_Table_JSON_{start_time.ToString("dd-MM-yyyy--hh-mm-ss")}_until_{stop_time.ToString("dd-MM-yyyy--hh-mm-ss")}.json");
 
             using FileStream readstream = File.OpenRead(filename);
 
