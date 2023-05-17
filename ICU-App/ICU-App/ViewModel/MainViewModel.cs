@@ -286,8 +286,10 @@ public partial class MainViewModel : ObservableRecipient
                 // get orientation sensor data 
                 if (_angles.Z < 360 && _angles.X < 360)
                 {
-                    communicationData.PitchG = Math.Abs((int)_angles.Z);
-                    communicationData.YawG = Math.Abs((int)_angles.X);
+                    // communicationData.PitchG = Math.Abs((int)_angles.Z);
+                    // communicationData.YawG = Math.Abs((int)_angles.X);
+                    communicationData.PitchG = Math.Abs((int)_angles.X);
+                    communicationData.YawG = Math.Abs((int)_angles.Z);
                     communicationData.RollG = Math.Abs((int)_angles.Y);
 
                     string message = JsonSerializer.Serialize(communicationData);
@@ -295,8 +297,8 @@ public partial class MainViewModel : ObservableRecipient
                     _udpclient.Send(message);
                 }
                // 1ms timeout
-                Thread.Sleep(1);
-                // Thread.Sleep(1000);
+               Thread.Sleep(1);
+               // Thread.Sleep(1000);
             }
         }
         catch (Exception ex)
